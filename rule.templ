@@ -1,0 +1,67 @@
+package main
+
+import "fmt"
+
+const idKey = "rid";
+
+const deleteField = "del";
+const fieldField = "f";
+const opField = "o";
+const valueField = "v";
+
+const actionAdd = "a";
+const actionSave = "s";
+
+func rowId(id int) string {
+  return fmt.Sprintf("row-%d", id);
+}
+
+func fieldId(id int, suffix string) string {
+  return fmt.Sprintf("row-%d-%s", id, suffix);
+}
+
+func ruleTitle(rule LogRule) string {
+  if (rule.Id != nil) {
+    return fmt.Sprintf("Log Rule #%d Editor", rule.Id);
+  }
+  return "Log Rule Creator";
+}
+
+func ruleIdString(rule LogRule) string {
+  if (rule.Id != nil) {
+    return fmt.Sprintf("%d", rule.Id);
+  }
+  return "-1";
+}
+
+templ LogRuleEdit(rule LogRule) {
+  @Base(ruleTitle(rule)) {
+  <form action="/rule/edit">
+    <input type="hidden" name={idKey} value={ruleIdString(rule)} />
+    for i, matcher := range rule.Matchers {
+      <div class="row" id={rowId(i)}>
+        @Col(1) {
+          <input type="submit" name={fieldId(i, deleteField)} value="Delete" />
+        }
+        @Col(2) {
+         <input type="text" name={fieldId(i, fieldField)} value={matcher.Field} />
+        }
+        @Col(1) {
+         <input type="text" name={fieldId(i, opField)} value={matcher.Op} />
+        }
+        @Col(8) {
+         <input type="text" name={fieldId(i, valueField)} value={matcher.Value} />
+        }
+      </div>
+    }
+    @Row("add-new") {
+      @Col(2) {
+        <input type="submit" name={actionAdd} value="Add field" />
+      }
+      @Col(2) {
+        <input type="submit" name={actionSave}  value="Save" />
+      }
+    }
+  </form>
+  }
+}

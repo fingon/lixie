@@ -1,0 +1,48 @@
+package main
+
+import "fmt"
+
+templ Base(title string) {
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <title>{title}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="/static/style.css" />
+    </head>
+    <body>
+      @Row("title") {
+        @Col(12) {
+          <h1>{title}</h1>
+        }
+      }
+      @Row("nav") {
+        @Col(1) {
+          <a href="/log/">Logs</a>
+        }
+        @Col(1) {
+          <a href="/rule/">Rules</a>
+        }
+      }
+      { children... }
+  </body>
+</html>
+}
+
+// Fresh row (with N columns of up to 12 width)
+templ Row(id string) {
+  <div class="row" id={id}>
+    { children... }
+  </div>
+}
+
+func colForWidth(width int) string {
+  return fmt.Sprintf("col-%d", width);
+}
+
+// Variable-width column
+templ Col(width int) {
+  <div class={colForWidth(width)}>
+    { children... }
+  </div>
+}

@@ -1,0 +1,76 @@
+/*
+ * Author: Markus Stenberg <fingon@iki.fi>
+ *
+ * Copyright (c) 2024 Markus Stenberg
+ *
+ */
+
+package main
+
+import (
+	"net/http"
+	"slices"
+	"strconv"
+)
+
+type LogFieldMatcher struct {
+	Field string
+	Op    string
+	Value string
+}
+
+type LogRule struct {
+	// Id; if not persisted, it may be nil
+	// (Used when creating new rule)
+	Id *int
+
+	// List of matchers the rule matches against
+	Matchers []LogFieldMatcher
+}
+
+func NewLogRuleFromForm(r *http.Request) (*LogRule, error) {
+	matchers := []LogFieldMatcher{}
+	var id *int
+
+	// Read ID of the Rule (if any)
+	id_string := r.FormValue(idKey)
+	if id_string != "" {
+		i, err := strconv.Atoi(id_string)
+		if err != nil {
+			return nil, err
+		}
+		if i >= 0 {
+			id = &i
+		}
+	}
+
+	// Read the matcher fields
+	i := 0
+	delete := -1
+	for {
+		field := fieldId(i, fieldField)
+		_, ok := r.Form[field]
+		if !ok {
+			break
+		}
+		// Keep track of what to delete here too
+		if r.FormValue(fieldId(i, deleteField)) != "" {
+			delete = i
+		}
+		op := fieldId(i, opField)
+		value := fieldId(i, valueField)
+		matcher := LogFieldMatcher{Field: r.FormValue(field), Op: r.FormValue(op), Value: r.FormValue(value)}
+		matchers = append(matchers, matcher)
+		i += 1
+	}
+
+	// Handle the mutation actions
+	if delete >= 0 {
+		matchers = slices.Delete(matchers, delete, delete+1)
+	}
+	if r.FormValue(actionAdd) != "" {
+		matchers = append(matchers, LogFieldMatcher{})
+	}
+	// Save is dealt with externally
+	return &LogRule{Id: id, Matchers: matchers}, nil
+}
