@@ -20,9 +20,8 @@ type LogFieldMatcher struct {
 }
 
 type LogRule struct {
-	// Id; if not persisted, it may be nil
-	// (Used when creating new rule)
-	Id *int
+	// Id zero is reserved 'not saved'
+	Id int
 
 	// List of matchers the rule matches against
 	Matchers []LogFieldMatcher
@@ -30,17 +29,15 @@ type LogRule struct {
 
 func NewLogRuleFromForm(r *http.Request) (*LogRule, error) {
 	matchers := []LogFieldMatcher{}
-	var id *int
+	rid := 0
 
 	// Read ID of the Rule (if any)
 	id_string := r.FormValue(idKey)
 	if id_string != "" {
-		i, err := strconv.Atoi(id_string)
+		var err error
+		rid, err = strconv.Atoi(id_string)
 		if err != nil {
 			return nil, err
-		}
-		if i >= 0 {
-			id = &i
 		}
 	}
 
@@ -72,5 +69,5 @@ func NewLogRuleFromForm(r *http.Request) (*LogRule, error) {
 		matchers = append(matchers, LogFieldMatcher{})
 	}
 	// Save is dealt with externally
-	return &LogRule{Id: id, Matchers: matchers}, nil
+	return &LogRule{Id: rid, Matchers: matchers}, nil
 }

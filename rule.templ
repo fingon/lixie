@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "strconv"
 
 const idKey = "rid";
 
@@ -21,17 +22,14 @@ func fieldId(id int, suffix string) string {
 }
 
 func ruleTitle(rule LogRule) string {
-  if (rule.Id != nil) {
-    return fmt.Sprintf("Log Rule #%d Editor", rule.Id);
+  if (rule.Id > 0) {
+    return fmt.Sprintf("Log rule editor - editing #%d", rule.Id);
   }
-  return "Log Rule Creator";
+  return "Log rule creator";
 }
 
 func ruleIdString(rule LogRule) string {
-  if (rule.Id != nil) {
-    return fmt.Sprintf("%d", rule.Id);
-  }
-  return "-1";
+  return fmt.Sprintf("%d", rule.Id);
 }
 
 templ LogRuleEdit(rule LogRule) {
@@ -39,7 +37,7 @@ templ LogRuleEdit(rule LogRule) {
   <form action="/rule/edit">
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
     for i, matcher := range rule.Matchers {
-      <div class="row" id={rowId(i)}>
+      @Row(rowId(i)) {
         @Col(1) {
           <input type="submit" name={fieldId(i, deleteField)} value="Delete" />
         }
@@ -52,7 +50,7 @@ templ LogRuleEdit(rule LogRule) {
         @Col(8) {
          <input type="text" name={fieldId(i, valueField)} value={matcher.Value} />
         }
-      </div>
+      }
     }
     @Row("add-new") {
       @Col(2) {
@@ -63,5 +61,56 @@ templ LogRuleEdit(rule LogRule) {
       }
     }
   </form>
+  }
+}
+
+templ LogRuleMatchersTable(rule LogRule) {
+  <table>
+    <tbody>
+      for _, matcher := range rule.Matchers {
+        <tr>
+          <td>{matcher.Field}</td>
+          <td>{matcher.Op}</td>
+          <td>{matcher.Value}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+
+func ruleLink(id int) templ.SafeURL {
+  return templ.URL(fmt.Sprintf("/rule/edit/%d", id))
+}
+
+
+templ LogRuleList(rules []LogRule) {
+  @Base("Log rule list") {
+    @Row("rules") {
+      @Col(12) {
+        <table>
+          <tbody>
+            for _, rule := range rules {
+              <tr>
+                <td>
+                  #{strconv.Itoa(rule.Id)}
+                </td>
+                <td>
+                  @LogRuleMatchersTable(rule)
+                </td>
+                <td>
+                  <a href={ruleLink(rule.Id)}>Edit</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+    @Row("rule-add") {
+      @Col(22) {
+        <a href="/rule/edit">Add rule</a>
+      }
+    }
   }
 }
