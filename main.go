@@ -16,6 +16,8 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+
+	"github.com/a-h/templ"
 )
 
 type Database struct {
@@ -168,6 +170,7 @@ func main() {
 	// Other options: StatusMovedPermanently, StatusFound
 	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
 	//})
+	http.Handle("/", templ.Handler(MainPage()))
 	http.Handle("/rule/", LogRuleListHandler{&db})
 	http.Handle("/rule/edit", LogRuleEditHandler{&db})
 	http.Handle("/rule/{id}/delete", LogRuleDeleteSpecificHandler{&db})
