@@ -14,27 +14,43 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 )
 
 type Database struct {
 	// TODO: This should be probably really a map
-	LogRules []LogRule
+	LogRules []*LogRule
+	nextId   int
 }
 
 func (self *Database) Add(r LogRule) {
 	r.Id = self.nextLogRuleId()
-	self.LogRules = append(self.LogRules, r)
+	self.LogRules = append(self.LogRules, &r)
+}
+
+func (self *Database) Delete(rid int) bool {
+	for i, v := range self.LogRules {
+		if v.Id == rid {
+			self.LogRules = slices.Delete(self.LogRules, i, i+1)
+			return true
+		}
+	}
+	return false
 }
 
 func (self *Database) nextLogRuleId() int {
-	next := 1
-	for _, v := range self.LogRules {
-		if v.Id >= next {
-			next = v.Id + 1
+	id := self.nextId
+	if id == 0 {
+		id = 1 // Start at 1 even with empty database
+		for _, v := range self.LogRules {
+			if v.Id >= id {
+				id = v.Id + 1
+			}
 		}
 	}
-	return next
+	self.nextId = id + 1
+	return id
 }
 
 type LogRuleEditHandler struct {
@@ -67,6 +83,7 @@ func (self LogRuleEditHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		// Look for existing rule first
 		for _, v := range self.Database.LogRules {
 			if v.Id == rule.Id {
+				fmt.Printf("Rewrote matchers of rule %d\n", v.Id)
 				v.Matchers = rule.Matchers
 				http.Redirect(w, r, "/rule/", http.StatusSeeOther)
 				return
@@ -74,11 +91,30 @@ func (self LogRuleEditHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		}
 
 		// Not found. Add new one.
+		fmt.Printf("Adding new rule\n")
 		self.Database.Add(*rule)
 		http.Redirect(w, r, "/rule/", http.StatusSeeOther)
-
+		return
 	}
 	LogRuleEdit(*rule).Render(r.Context(), w)
+}
+
+type LogRuleDeleteSpecificHandler struct {
+	Database *Database
+}
+
+func (self LogRuleDeleteSpecificHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	rid_string := r.PathValue("id")
+	rid, err := strconv.Atoi(rid_string)
+	if err != nil {
+		// TODO handle error
+		return
+	}
+	if self.Database.Delete(rid) {
+		http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+		return
+	}
+	http.NotFound(w, r)
 }
 
 type LogRuleEditSpecificHandler struct {
@@ -94,7 +130,7 @@ func (self LogRuleEditSpecificHandler) ServeHTTP(w http.ResponseWriter, r *http.
 	}
 	for _, v := range self.Database.LogRules {
 		if v.Id == rid {
-			LogRuleEdit(v).Render(r.Context(), w)
+			LogRuleEdit(*v).Render(r.Context(), w)
 			return
 		}
 	}
@@ -114,12 +150,12 @@ var embedContent embed.FS
 
 func main() {
 	// Sample content
-	rules := []LogRule{
-		{Id: 1,
-			Matchers: []LogFieldMatcher{
-				{Field: "message",
-					Op:    "=",
-					Value: "foobar"}}}}
+	rule := LogRule{Id: 1,
+		Matchers: []LogFieldMatcher{
+			{Field: "message",
+				Op:    "=",
+				Value: "foobar"}}}
+	rules := []*LogRule{&rule}
 	db := Database{LogRules: rules}
 
 	static_fs, err := fs.Sub(embedContent, "static")
@@ -134,7 +170,8 @@ func main() {
 	//})
 	http.Handle("/rule/", LogRuleListHandler{&db})
 	http.Handle("/rule/edit", LogRuleEditHandler{&db})
-	http.Handle("/rule/edit/{id}", LogRuleEditSpecificHandler{&db})
+	http.Handle("/rule/{id}/delete", LogRuleDeleteSpecificHandler{&db})
+	http.Handle("/rule/{id}/edit", LogRuleEditSpecificHandler{&db})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static_fs))))
 
 	// CLI

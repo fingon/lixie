@@ -79,12 +79,12 @@ templ LogRuleMatchersTable(rule LogRule) {
 }
 
 
-func ruleLink(id int) templ.SafeURL {
-  return templ.URL(fmt.Sprintf("/rule/edit/%d", id))
+func ruleLink(id int, op string) templ.SafeURL {
+  return templ.URL(fmt.Sprintf("/rule/%d/%s", id, op))
 }
 
 
-templ LogRuleList(rules []LogRule) {
+templ LogRuleList(rules []*LogRule) {
   @Base("Log rule list") {
     @Row("rules") {
       @Col(12) {
@@ -96,10 +96,11 @@ templ LogRuleList(rules []LogRule) {
                   #{strconv.Itoa(rule.Id)}
                 </td>
                 <td>
-                  @LogRuleMatchersTable(rule)
+                  @LogRuleMatchersTable(*rule)
                 </td>
                 <td>
-                  <a href={ruleLink(rule.Id)}>Edit</a>
+                  <a href={ruleLink(rule.Id, "delete")}>Delete</a>
+                  <a href={ruleLink(rule.Id, "edit")}>Edit</a>
                 </td>
               </tr>
             }
