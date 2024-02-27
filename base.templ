@@ -9,8 +9,9 @@ templ Base(title string) {
       <title>{title}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="stylesheet" href="/static/style.css" />
+      <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
     </head>
-    <body>
+    <body hx-boost="true">
       @Row("title") {
         @Col(12) {
           <h1>{title}</h1>
@@ -37,7 +38,7 @@ templ Row(id string) {
 }
 
 func colForWidth(width int) string {
-  return fmt.Sprintf("col-%d", width);
+  return fmt.Sprintf("col-%d", width)
 }
 
 // Variable-width column

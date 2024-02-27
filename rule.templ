@@ -3,33 +3,33 @@ package main
 import "fmt"
 import "strconv"
 
-const idKey = "rid";
+const idKey = "rid"
 
-const deleteField = "del";
-const fieldField = "f";
-const opField = "o";
-const valueField = "v";
+const deleteField = "del"
+const fieldField = "f"
+const opField = "o"
+const valueField = "v"
 
-const actionAdd = "a";
-const actionSave = "s";
+const actionAdd = "a"
+const actionSave = "s"
 
 func rowId(id int) string {
-  return fmt.Sprintf("row-%d", id);
+  return fmt.Sprintf("row-%d", id)
 }
 
 func fieldId(id int, suffix string) string {
-  return fmt.Sprintf("row-%d-%s", id, suffix);
+  return fmt.Sprintf("row-%d-%s", id, suffix)
 }
 
 func ruleTitle(rule LogRule) string {
   if (rule.Id > 0) {
-    return fmt.Sprintf("Log rule editor - editing #%d", rule.Id);
+    return fmt.Sprintf("Log rule editor - editing #%d", rule.Id)
   }
-  return "Log rule creator";
+  return "Log rule creator"
 }
 
 func ruleIdString(rule LogRule) string {
-  return fmt.Sprintf("%d", rule.Id);
+  return fmt.Sprintf("%d", rule.Id)
 }
 
 templ LogRuleEdit(rule LogRule) {
