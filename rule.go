@@ -23,8 +23,14 @@ type LogRule struct {
 	// Id zero is reserved 'not saved'
 	Id int
 
+	// Rule may or may not be enabled
+	Enabled bool
+
 	// List of matchers the rule matches against
 	Matchers []LogFieldMatcher
+
+	// Is the result interesting, or not?
+	Ham bool
 }
 
 func NewLogRuleFromForm(r *http.Request) (*LogRule, error) {

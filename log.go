@@ -16,6 +16,8 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
+
+	"github.com/cespare/xxhash"
 )
 
 type Log struct {
@@ -23,6 +25,10 @@ type Log struct {
 	Metric    map[string]string
 	Stream    map[string]string
 	Message   string
+}
+
+func (self *Log) Hash() uint64 {
+	return xxhash.Sum64([]byte(self.Message))
 }
 
 func lokiStringToMessage(data string) string {

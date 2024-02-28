@@ -1,6 +1,11 @@
 package main
 
+import "fmt"
 import "strconv"
+
+func logLink(log *Log, op string) templ.SafeURL {
+  return templ.URL(fmt.Sprintf("/log/%d/%s", log.Hash(), op))
+}
 
 templ LogList(autorefresh bool, logs []*Log) {
   @Base(TopLevelLog, "Log list") {
@@ -22,12 +27,23 @@ templ LogList(autorefresh bool, logs []*Log) {
       @Col(12) {
         <table class="table">
           <thead>
+            if !autorefresh {
+            <th scope="col">Op</th>
+            }
             <th scope="col">Timestamp</th>
             <th scope="col">Message</th>
           </thead>
           <tbody>
             for _, log := range logs {
               <tr>
+                if !autorefresh {
+                <td>
+                  <div class="btn-group">
+                    <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
+                    <a class="btn btn-primary btn-sm" href={logLink(log, "ham")}>!</a>
+                  </div>
+                </td>
+                }
                 <td>{strconv.Itoa(log.Timestamp)}</td>
                 <td>{log.Message}</td>
               </tr>
