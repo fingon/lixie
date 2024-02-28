@@ -146,7 +146,8 @@ func logRuleListHandler(db *Database) http.Handler {
 	})
 }
 
-//go:embed all:static
+// Note: While we don't have any static, double comment = static/ will be empty
+// //go:embed all:static
 var embedContent embed.FS
 
 // These might be also useful at some point

@@ -33,30 +33,30 @@ func ruleIdString(rule LogRule) string {
 }
 
 templ LogRuleEdit(rule LogRule) {
-  @Base(ruleTitle(rule)) {
+  @Base(TopLevelRule, ruleTitle(rule)) {
   <form action="/rule/edit">
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
     @Row("add-new") {
       @Col(2) {
-        <input type="submit" name={actionAdd} value="Add field" />
+        <input class="btn btn-secondary"  type="submit" name={actionAdd} value="Add field" />
       }
       @Col(2) {
-        <input type="submit" name={actionSave}  value="Save" />
+        <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
       }
     }
     for i, matcher := range rule.Matchers {
       @Row(rowId(i)) {
         @Col(1) {
-          <input type="submit" name={fieldId(i, deleteField)} value="Delete" />
+          <input type="submit" class="btn btn-danger" name={fieldId(i, deleteField)} value="Delete" />
         }
         @Col(2) {
-         <input type="text" name={fieldId(i, fieldField)} value={matcher.Field} />
+         <input class="form-text" type="text" name={fieldId(i, fieldField)} value={matcher.Field} />
         }
         @Col(1) {
-         <input type="text" name={fieldId(i, opField)} value={matcher.Op} />
+         <input class="form-text" type="text" name={fieldId(i, opField)} value={matcher.Op} />
         }
         @Col(8) {
-         <input type="text" name={fieldId(i, valueField)} value={matcher.Value} />
+         <input class="form-text" type="text" name={fieldId(i, valueField)} value={matcher.Value} />
         }
       }
     }
@@ -65,7 +65,7 @@ templ LogRuleEdit(rule LogRule) {
 }
 
 templ LogRuleMatchersTable(rule LogRule) {
-  <table>
+  <table class="table">
     <tbody>
       for _, matcher := range rule.Matchers {
         <tr>
@@ -85,27 +85,35 @@ func ruleLink(id int, op string) templ.SafeURL {
 
 
 templ LogRuleList(rules []*LogRule) {
-  @Base("Log rule list") {
+  @Base(TopLevelRule, "Log rule list") {
     @Row("rule-add") {
       @Col(2) {
-        <a href="/rule/edit">Add rule</a>
+        <a class="btn btn-secondary" href="/rule/edit">Add rule</a>
       }
     }
     @Row("rules") {
       @Col(12) {
-        <table>
+        <table class="table">
+          <thead>
+            <th scope="col">#</th>
+            <th scope="col">Matchers</th>
+            <th scope="col">Actions</th>
+          </thead>
           <tbody>
             for _, rule := range rules {
               <tr>
-                <td>
-                  #{strconv.Itoa(rule.Id)}
-                </td>
-                <td>
+                <th scope="row">
+                  {strconv.Itoa(rule.Id)}
+                </th>
+                <td class="table-primary">
                   @LogRuleMatchersTable(*rule)
                 </td>
-                <td>
-                  <a href={ruleLink(rule.Id, "delete")}>Delete</a>
-                  <a href={ruleLink(rule.Id, "edit")}>Edit</a>
+                <td class="table-secondary">
+                  <div class="position-relative">
+                    <a class="btn btn-primary" href={ruleLink(rule.Id, "edit")}>Edit</a>
+                    <a class="btn btn-danger position-absolute end-0"
+                       href={ruleLink(rule.Id, "delete")}>Delete</a>
+                  </div>
                 </td>
               </tr>
             }
