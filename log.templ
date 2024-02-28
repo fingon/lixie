@@ -1,0 +1,27 @@
+package main
+
+import "strconv"
+
+templ LogList(logs []*Log) {
+  @Base(TopLevelLog, "Log list") {
+    @Row("logs") {
+      @Col(12) {
+        <table class="table">
+          <thead>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Message</th>
+          </thead>
+          <tbody>
+            for _, log := range logs {
+              <tr>
+                <td>{strconv.Itoa(log.Timestamp)}</td>
+                <td>{log.Message}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  }
+}
+

@@ -146,6 +146,19 @@ func logRuleListHandler(db *Database) http.Handler {
 	})
 }
 
+func logListHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// fmt.Printf("starting logs query\n")
+		logs, err := retrieveLogs(db.LogRules, r)
+		if err != nil {
+			// fmt.Printf("logs query failed: %w\n", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		LogList(logs).Render(r.Context(), w)
+	})
+}
+
 // Note: While we don't have any static, double comment = static/ will be empty
 // //go:embed all:static
 var embedContent embed.FS
@@ -198,6 +211,7 @@ func run(
 	main_handler := templ.Handler(MainPage())
 	http.Handle("/{$}", main_handler)
 	http.Handle("/index.html", main_handler)
+	http.Handle("/log/{$}", logListHandler(&db))
 	http.Handle("/rule/{$}", logRuleListHandler(&db))
 	http.Handle("/rule/edit", logRuleEditHandler(&db))
 	http.Handle("/rule/{id}/delete", logRuleDeleteSpecificHandler(&db))
