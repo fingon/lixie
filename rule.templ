@@ -4,6 +4,10 @@ import "fmt"
 import "strconv"
 
 const idKey = "rid"
+const versionKey = "ver"
+
+const hamKey = "h"
+const disabledKey = "d"
 
 const deleteField = "del"
 const fieldField = "f"
@@ -36,12 +40,25 @@ templ LogRuleEdit(rule LogRule) {
   @Base(TopLevelRule, ruleTitle(rule)) {
   <form action="/rule/edit">
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
+    <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
     @Row("add-new") {
       @Col(2) {
         <input class="btn btn-secondary"  type="submit" name={actionAdd} value="Add field" />
       }
       @Col(2) {
         <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
+      }
+    }
+    @Row("state") {
+      @Col(2) {
+        <label for={hamKey} class="form-label">Ham</label>
+        <input class="btn btn-secondary" type="checkbox" name={hamKey}
+               checked?={rule.Ham} value="Ham" />
+      }
+      @Col(2) {
+        <label for={disabledKey} class="form-label">Disabled</label>
+        <input class="btn btn-secondary" type="checkbox" name={disabledKey}
+               checked?={rule.Disabled} value="Disabled" />
       }
     }
     for i, matcher := range rule.Matchers {
@@ -96,6 +113,7 @@ templ LogRuleList(rules []*LogRule) {
         <table class="table">
           <thead>
             <th scope="col">#</th>
+            <th scope="col">State</th>
             <th scope="col">Matchers</th>
             <th scope="col">Actions</th>
           </thead>
@@ -105,6 +123,19 @@ templ LogRuleList(rules []*LogRule) {
                 <th scope="row">
                   {strconv.Itoa(rule.Id)}
                 </th>
+                <td scope="row">
+                  v{strconv.Itoa(rule.Version)}
+                  if rule.Disabled {
+                    Disabled
+                  } else {
+                    Enabled
+                  }
+                  if rule.Ham {
+                    Ham
+                  } else {
+                    Spam
+                  }
+                </td>
                 <td class="table-primary">
                   @LogRuleMatchersTable(*rule)
                 </td>

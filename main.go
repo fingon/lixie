@@ -103,8 +103,13 @@ func logRuleEditHandler(db *Database) http.Handler {
 			// Look for existing rule first
 			for _, v := range db.LogRules {
 				if v.Id == rule.Id {
-					fmt.Printf("Rewrote matchers of rule %d\n", v.Id)
-					v.Matchers = rule.Matchers
+					// TODO do we want to error if version differs?
+					if v.Version == rule.Version {
+						*v = *rule
+						v.Version++
+					} else {
+						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
+					}
 					http.Redirect(w, r, "/rule/", http.StatusSeeOther)
 					return
 				}
