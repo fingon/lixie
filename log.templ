@@ -2,8 +2,22 @@ package main
 
 import "strconv"
 
-templ LogList(logs []*Log) {
+templ LogList(autorefresh bool, logs []*Log) {
   @Base(TopLevelLog, "Log list") {
+    @Row("refresh") {
+      @Col(6) {
+        if autorefresh {
+          <a class="btn btn-primary" href="/log/">Turn off autorefresh</a>
+          <div hx-get="/log/"
+               hx-trigger="every 1s"
+               hx-target="#logs"
+               hx-select="#logs" />
+        } else {
+          <a class="btn btn-primary" href="/log/?autorefresh=1">Turn on autorefresh</a>
+          <a class="btn btn-primary" href="/log/">Refresh</a>
+        }
+      }
+    }
     @Row("logs") {
       @Col(12) {
         <table class="table">
@@ -24,4 +38,3 @@ templ LogList(logs []*Log) {
     }
   }
 }
-

@@ -155,7 +155,7 @@ func logListHandler(db *Database) http.Handler {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		LogList(logs).Render(r.Context(), w)
+		LogList(r.FormValue("autorefresh") != "", logs).Render(r.Context(), w)
 	})
 }
 
