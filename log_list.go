@@ -8,7 +8,13 @@
 package main
 
 import (
+	"cmp"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 
 	"github.com/a-h/templ"
@@ -72,6 +78,103 @@ func (self LogListConfig) ToLink() templ.SafeURL {
 }
 
 type LogListModel struct {
-	Config LogListConfig
-	Logs   []*Log
+	Config   LogListConfig
+	Logs     []*Log
+	LogRules []*LogRule
+	Spam     []*Log
+}
+
+func (self *LogListModel) LogVerdict(log *Log) int {
+	// TODO: These should be probably cached
+	return LogVerdict(log, self.LogRules)
+}
+
+func (self *LogListModel) SplitSpam() {
+	// Some spare capacity but who really cares
+	logs := make([]*Log, 0, len(self.Logs))
+	spam := make([]*Log, 0, len(self.Logs))
+	for _, log := range self.Logs {
+		if self.LogVerdict(log) != LogVerdictSpam {
+			logs = append(logs, log)
+		} else {
+			spam = append(spam, log)
+		}
+	}
+	self.Logs = logs
+	self.Spam = spam
+}
+
+func retrieveLogs(r *http.Request) ([]*Log, error) {
+	logs := []*Log{}
+
+	// TBD don't hardcode endpoint and query
+	base := "http://fw.lan:3100/loki/api/v1/query_range"
+	v := url.Values{}
+	v.Set("query", "{forwarder=\"vector\"}")
+
+	resp, err := http.Get(base + "?" + v.Encode())
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("Invalid result from Loki: %w", err)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	resp.Body.Close()
+
+	var result LokiQueryResult
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	status := result.Status
+	if status != "success" {
+		return nil, fmt.Errorf("invalid status from Loki:%s", status)
+	}
+
+	rtype := result.Data.ResultType
+	if rtype != "streams" {
+		return nil, fmt.Errorf("invalid result type from Loki:%s", rtype)
+	}
+	for _, result := range result.Data.Result {
+		for _, value := range result.Values {
+			timestamp, err := strconv.Atoi(value[0])
+			if err != nil {
+				return nil, err
+			}
+			logs = append(logs, NewLog(timestamp, result.Stream, value[1]))
+		}
+	}
+
+	// Loki output is by metric/stream and then by time; we don't
+	// really care, sort by timestamp desc. This may need to be
+	// rethought when we fetch more than just the latest
+	slices.SortFunc(logs, func(a, b *Log) int {
+		return -cmp.Compare(a.Timestamp, b.Timestamp)
+	})
+
+	return logs, nil
+}
+
+func logListHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// fmt.Printf("starting logs query\n")
+		logs, err := retrieveLogs(r)
+		if err != nil {
+			// fmt.Printf("logs query failed: %w\n", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		model := LogListModel{Config: NewLogListConfig(r),
+			Logs:     logs,
+			LogRules: db.LogRules}
+		model.SplitSpam()
+		LogList(model).Render(r.Context(), w)
+	})
 }

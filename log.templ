@@ -4,7 +4,7 @@ import "strconv"
 
 templ LogList(m LogListModel) {
   @Base(TopLevelLog, "Log list") {
-    @Row("refresh") {
+    @Row("refresh-and-count") {
       @Col(6) {
         if m.Config.AutoRefresh {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
@@ -20,6 +20,8 @@ templ LogList(m LogListModel) {
     }
     @Row("logs") {
       @Col(12) {
+        {strconv.Itoa(len(m.Logs))} logs and
+        {strconv.Itoa(len(m.Spam))} spam
         <table class="table">
           <thead>
             if !m.Config.AutoRefresh {
@@ -37,7 +39,10 @@ templ LogList(m LogListModel) {
                 <td>
                   <div class="btn-group">
                     <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
-                    <a class="btn btn-primary btn-sm" href={logLink(log, "ham")}>!</a>
+                    if m.LogVerdict(log) != LogVerdictHam {
+                      <a class="btn btn-primary btn-sm" href={logLink(log,
+                         "ham")}>!</a>
+                    }
                   </div>
                 </td>
                 }
@@ -68,7 +73,13 @@ templ LogList(m LogListModel) {
                     }
                   }
                 </td>
-                <td>{log.Message}</td>
+                <td>
+                  if m.LogVerdict(log) == LogVerdictHam {
+                    <b>{log.Message}</b>
+                  } else {
+                    {log.Message}
+                  }
+                </td>
               </tr>
             }
           </tbody>
