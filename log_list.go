@@ -70,3 +70,8 @@ func (self LogListConfig) ToLinkString() string {
 func (self LogListConfig) ToLink() templ.SafeURL {
 	return templ.URL(self.ToLinkString())
 }
+
+type LogListModel struct {
+	Config LogListConfig
+	Logs   []*Log
+}

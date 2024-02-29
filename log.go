@@ -17,6 +17,7 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/a-h/templ"
 	"github.com/cespare/xxhash"
 )
 
@@ -27,17 +28,38 @@ type Log struct {
 	Fields     map[string]interface{}
 	FieldsKeys []string
 	Message    string
+	RawMessage string
+
+	// Cache the xxhash of rawMessage
+	hash *uint64
+}
+
+func logLink(log *Log, op string) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/log/%d/%s", log.Hash(), op))
+}
+
+func toJson(v interface{}) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 func (self *Log) Hash() uint64 {
-	return xxhash.Sum64([]byte(self.Message))
+	if self.hash == nil {
+		hash := xxhash.Sum64([]byte(self.RawMessage))
+		self.hash = &hash
+	}
+	return *self.hash
 }
 
 func NewLog(timestamp int, stream map[string]string, data string) *Log {
 	result := Log{Timestamp: timestamp,
 		Stream:     stream,
 		StreamKeys: sortedKeys[string](stream),
-		Message:    data}
+		Message:    data,
+		RawMessage: data}
 
 	var fields map[string]interface{}
 	err := json.Unmarshal([]byte(data), &fields)

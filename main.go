@@ -175,7 +175,8 @@ func logListHandler(db *Database) http.Handler {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		LogList(NewLogListConfig(r), logs).Render(r.Context(), w)
+		LogList(LogListModel{Config: NewLogListConfig(r),
+			Logs: logs}).Render(r.Context(), w)
 	})
 }
 

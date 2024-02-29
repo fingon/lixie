@@ -1,34 +1,20 @@
 package main
 
-import "encoding/json"
-import "fmt"
 import "strconv"
 
-func logLink(log *Log, op string) templ.SafeURL {
-  return templ.URL(fmt.Sprintf("/log/%d/%s", log.Hash(), op))
-}
-
-func toJson(v interface {}) string {
-  b, err := json.Marshal(v)
-  if (err != nil) {
-    return ""
-  }
-  return string(b)
-}
-
-templ LogList(conf LogListConfig, logs []*Log) {
+templ LogList(m LogListModel) {
   @Base(TopLevelLog, "Log list") {
     @Row("refresh") {
       @Col(6) {
-        if conf.AutoRefresh {
-          <a class="btn btn-primary" href={conf.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
-          <div hx-get={conf.ToLinkString()}
+        if m.Config.AutoRefresh {
+          <a class="btn btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
+          <div hx-get={m.Config.ToLinkString()}
                hx-trigger="every 1s"
                hx-target="#logs"
                hx-select="#logs" />
         } else {
-          <a class="btn btn-primary" href={conf.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
-          <a class="btn btn-primary" href={conf.ToLink()}>Refresh</a>
+          <a class="btn btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
+          <a class="btn btn-primary" href={m.Config.ToLink()}>Refresh</a>
         }
       }
     }
@@ -36,7 +22,7 @@ templ LogList(conf LogListConfig, logs []*Log) {
       @Col(12) {
         <table class="table">
           <thead>
-            if !conf.AutoRefresh {
+            if !m.Config.AutoRefresh {
             <th scope="col">Op</th>
             }
             <th scope="col">Stream</th>
@@ -45,9 +31,9 @@ templ LogList(conf LogListConfig, logs []*Log) {
             <th scope="col">Message</th>
           </thead>
           <tbody>
-            for _, log := range logs {
+            for _, log := range m.Logs {
               <tr>
-                if !conf.AutoRefresh {
+                if !m.Config.AutoRefresh {
                 <td>
                   <div class="btn-group">
                     <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
@@ -56,12 +42,13 @@ templ LogList(conf LogListConfig, logs []*Log) {
                 </td>
                 }
                 <td>
-                  if conf.Expand != log.Hash() {
-                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(log.Hash()).ToLink()}>+
-                      ..{strconv.Itoa(len(log.StreamKeys))}..
+                  if m.Config.Expand != log.Hash() {
+                    source={log.Stream["source"]}
+                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                      +{strconv.Itoa(len(log.StreamKeys)-1)}
                     </a>
                   } else {
-                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(0).ToLink()}>-</a>
+                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.StreamKeys {
                       <p>{k}={log.Stream[k]}</p>
                     }
@@ -70,12 +57,12 @@ templ LogList(conf LogListConfig, logs []*Log) {
                 </td>
                 <td>{strconv.Itoa(log.Timestamp)}</td>
                 <td>
-                  if conf.Expand != log.Hash() {
-                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(log.Hash()).ToLink()}>+
-                      {strconv.Itoa(len(log.FieldsKeys))}
+                  if m.Config.Expand != log.Hash() {
+                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                      +{strconv.Itoa(len(log.FieldsKeys))}
                     </a>
                   } else {
-                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(0).ToLink()}>-</a>
+                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.FieldsKeys {
                       <p>{k}={toJson(log.Fields[k])}</p>
                     }
