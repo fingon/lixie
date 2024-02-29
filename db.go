@@ -16,13 +16,23 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
+	"sync"
 )
 
 type Database struct {
-	// TODO: This should be probably really a map
-	LogRules         []*LogRule
+	// TODO: There should be really locking here too;
+	// log fetching is probably the more common thing though
+	LogRules []*LogRule
+
+	// Internal caching of reversed log rules (that are shown to the user)
 	logRulesReversed []*LogRule
-	nextId           int
+
+	// Log caching
+	logLock sync.Mutex
+	logs    []*Log
+
+	// next id to be added state for rules
+	nextId int
 }
 
 func (self *Database) LogRulesReversed() []*LogRule {
@@ -68,13 +78,19 @@ func (self *Database) nextLogRuleId() int {
 	return id
 }
 
-func (self *Database) retrieveLogs() ([]*Log, error) {
+func (self *Database) retrieveLogs(start int) ([]*Log, error) {
 	logs := []*Log{}
 
 	// TBD don't hardcode endpoint and query
 	base := "http://fw.lan:3100/loki/api/v1/query_range"
 	v := url.Values{}
 	v.Set("query", "{forwarder=\"vector\"}")
+	//v.Set("direction", "backward")
+	// default is 100; wonder if we really want more at some point?
+	// v.Set("limit", "1000")
+	if start > 0 {
+		v.Set("start", strconv.Itoa(start))
+	}
 
 	resp, err := http.Get(base + "?" + v.Encode())
 	if err != nil {
@@ -82,7 +98,7 @@ func (self *Database) retrieveLogs() ([]*Log, error) {
 	}
 
 	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Invalid result from Loki: %w", err)
+		return nil, fmt.Errorf("Invalid result from Loki - status code %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -127,10 +143,25 @@ func (self *Database) retrieveLogs() ([]*Log, error) {
 }
 
 func (self *Database) Logs() []*Log {
-	logs, err := self.retrieveLogs()
-	if err != nil {
-		fmt.Printf("Error retrieving logs from Loki: %s", err.Error())
-		return []*Log{}
+	self.logLock.Lock()
+	defer self.logLock.Unlock()
+
+	start := 0
+	if len(self.logs) > 0 {
+		// TODO would be better to get same timestamp + eliminate if it is same entry
+		start = self.logs[0].Timestamp + 1
 	}
-	return logs
+	logs, err := self.retrieveLogs(start)
+	if err != nil {
+		fmt.Printf("Error retrieving logs from Loki: %s\n", err.Error())
+		return self.logs
+	}
+	for i, log := range logs {
+		if log.Timestamp <= start {
+			logs = logs[:i]
+			break
+		}
+	}
+	self.logs = append(logs, self.logs...)
+	return self.logs
 }
