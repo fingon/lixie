@@ -26,7 +26,13 @@ templ LogRuleEdit(rule LogRule) {
         <label for={disabledKey} class="form-label">Disabled</label>
         <input class="btn btn-secondary" type="checkbox" name={disabledKey}
                checked?={rule.Disabled} value="Disabled" />
-      }
+        }
+      @Col(8) {
+        <label for={commentKey} class="form-label">Comment</label>
+        <input class="form-text" type="text" name={commentKey}
+               value={rule.Comment} placeholder="Comment, if any" />
+        }
+
     }
     for i, matcher := range rule.Matchers {
       @Row(fmt.Sprintf("row-%d", i)) {

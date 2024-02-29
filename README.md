@@ -18,8 +18,18 @@ tool. Currently there are two planned modes:
 
 # TODO
 
-- favicon
+## Features
+
+- on-disk persistence
+
+- paging for log lines
+
+## Robustness
 
 - Implement some unit tests?
 
 - Properly vendor static resources (bootstrap CSS, htmx JS)
+
+## Prettiness
+
+- favicon

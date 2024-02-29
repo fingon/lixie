@@ -32,7 +32,8 @@ templ Base(toplevel int, title string) {
     </head>
     <body hx-boost="true">
       <div class="container-fluid">
-        @Row("lixie") {
+        <div class="bg-success-subtle">
+        @Row("nav") {
           @Col(2) {
             <h1><a href="/">Lixie</a></h1>
           }
@@ -49,12 +50,14 @@ templ Base(toplevel int, title string) {
             }
           </ul>
           }
-          @Col(2) {
+          @Col(6) {
             if toplevel != TopLevelMain {
-                <h2>{title}</h2>
+              <h2 class="float-end">{title}</h2>
             }
           }
         }
+        </div>
+        <br />
         { children... }
       </div>
     </body>

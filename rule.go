@@ -41,7 +41,26 @@ type LogRule struct {
 	Version int
 }
 
-func intFromForm(r *http.Request, key string, value *int) (found bool, err error) {
+// top-level form fields
+
+const idKey = "rid"
+
+const commentKey = "com"
+const disabledKey = "d"
+const hamKey = "h"
+const versionKey = "ver"
+
+// per-matcher fields
+const deleteField = "del"
+const fieldField = "f"
+const opField = "o"
+const valueField = "v"
+
+// actions
+const actionAdd = "a"
+const actionSave = "s"
+
+func intFromForm(r FormValued, key string, value *int) (found bool, err error) {
 	raw := r.FormValue(key)
 	if raw == "" {
 		return
@@ -50,7 +69,7 @@ func intFromForm(r *http.Request, key string, value *int) (found bool, err error
 	return
 }
 
-func boolFromForm(r *http.Request, key string, value *bool) {
+func boolFromForm(r FormValued, key string, value *bool) {
 	raw := r.FormValue(key)
 	if raw == "" {
 		return
@@ -58,7 +77,7 @@ func boolFromForm(r *http.Request, key string, value *bool) {
 	*value = true
 }
 
-func NewLogRuleFromForm(r *http.Request) (result *LogRule, err error) {
+func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 	rule := LogRule{}
 
 	if _, err = intFromForm(r, idKey, &rule.Id); err != nil {
@@ -69,23 +88,23 @@ func NewLogRuleFromForm(r *http.Request) (result *LogRule, err error) {
 	}
 	boolFromForm(r, disabledKey, &rule.Disabled)
 	boolFromForm(r, hamKey, &rule.Ham)
+	rule.Comment = r.FormValue(commentKey)
 
 	// Read the matcher fields
 	i := 0
 	delete := -1
 	for {
-		field := fieldId(i, fieldField)
-		_, ok := r.Form[field]
-		if !ok {
-			break
-		}
 		// Keep track of what to delete here too
 		if r.FormValue(fieldId(i, deleteField)) != "" {
 			delete = i
 		}
-		op := fieldId(i, opField)
-		value := fieldId(i, valueField)
-		matcher := LogFieldMatcher{Field: r.FormValue(field), Op: r.FormValue(op), Value: r.FormValue(value)}
+		field := r.FormValue(fieldId(i, fieldField))
+		op := r.FormValue(fieldId(i, opField))
+		value := r.FormValue(fieldId(i, valueField))
+		if field == "" && op == "" && value == "" {
+			break
+		}
+		matcher := LogFieldMatcher{Field: field, Op: op, Value: value}
 		rule.Matchers = append(rule.Matchers, matcher)
 		i += 1
 	}
@@ -176,20 +195,6 @@ func logRuleListHandler(db *Database) http.Handler {
 
 	})
 }
-
-const idKey = "rid"
-const versionKey = "ver"
-
-const hamKey = "h"
-const disabledKey = "d"
-
-const deleteField = "del"
-const fieldField = "f"
-const opField = "o"
-const valueField = "v"
-
-const actionAdd = "a"
-const actionSave = "s"
 
 func fieldId(id int, suffix string) string {
 	return fmt.Sprintf("row-%d-%s", id, suffix)
