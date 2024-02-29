@@ -21,7 +21,8 @@ templ LogList(m LogListModel) {
     @Row("logs") {
       @Col(12) {
         {strconv.Itoa(len(m.Logs))} logs and
-        {strconv.Itoa(len(m.Spam))} spam
+          {strconv.Itoa(len(m.Spam))} spam covering
+          {strconv.Itoa((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9)} seconds
         <table class="table">
           <thead>
             if !m.Config.AutoRefresh {

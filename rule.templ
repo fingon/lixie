@@ -34,13 +34,16 @@ templ LogRuleEdit(rule LogRule) {
           <input type="submit" class="btn btn-danger" name={fieldId(i, deleteField)} value="Delete" />
         }
         @Col(2) {
-         <input class="form-text" type="text" name={fieldId(i, fieldField)} value={matcher.Field} />
+          <input class="form-text" type="text" name={fieldId(i, fieldField)}
+                 value={matcher.Field} placeholder="Field name to match" />
         }
         @Col(1) {
-         <input class="form-text" type="text" name={fieldId(i, opField)} value={matcher.Op} />
+          <input class="form-text" type="text" name={fieldId(i, opField)}
+                 value={matcher.Op} placeholder="Operation to use (e.g. =)" />
         }
         @Col(8) {
-         <input class="form-text" type="text" name={fieldId(i, valueField)} value={matcher.Value} />
+         <input class="form-text" type="text" name={fieldId(i, valueField)}
+                value={matcher.Value} placeholder="Value of the operation" />
         }
       }
     }
@@ -113,8 +116,7 @@ templ LogRuleList(rules []*LogRule) {
                 <td class="table-secondary">
                   <div class="position-relative">
                     <a class="btn btn-primary" href={ruleLink(rule.Id, "edit")}>Edit</a>
-                    <a class="btn btn-danger position-absolute end-0"
-                       href={ruleLink(rule.Id, "delete")}>Delete</a>
+                    <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
                   </div>
                 </td>
               </tr>

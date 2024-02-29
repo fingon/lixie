@@ -95,7 +95,7 @@ func NewLogRuleFromForm(r *http.Request) (result *LogRule, err error) {
 		rule.Matchers = slices.Delete(rule.Matchers, delete, delete+1)
 	}
 	if r.FormValue(actionAdd) != "" {
-		rule.Matchers = append(rule.Matchers, LogFieldMatcher{})
+		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Op: "="})
 	}
 	// Save is dealt with externally
 	result = &rule
