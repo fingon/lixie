@@ -15,47 +15,43 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
-	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/cespare/xxhash"
 )
 
 type Log struct {
-	Timestamp int
-	Stream    map[string]string
-	Fields    map[string]interface{}
-	Message   string
+	Timestamp  int
+	Stream     map[string]string
+	StreamKeys []string
+	Fields     map[string]interface{}
+	FieldsKeys []string
+	Message    string
 }
 
 func (self *Log) Hash() uint64 {
 	return xxhash.Sum64([]byte(self.Message))
 }
 
-func (self *Log) StreamString() string {
-	parts := []string{}
-	for _, k := range sortedKeys[string](self.Stream) {
-		v := self.Stream[k]
-		parts = append(parts, fmt.Sprintf("%s=%s", k, v))
-	}
-	// TODO this isn't particularly performant, we should really
-	// centralize all 'same' Streams as distinct objects
-	parts = sort.StringSlice(parts)
-	return strings.Join(parts, ",")
-}
-
 func NewLog(timestamp int, stream map[string]string, data string) *Log {
 	result := Log{Timestamp: timestamp,
-		Stream:  stream,
-		Message: data}
-	var content map[string]interface{}
-	err := json.Unmarshal([]byte(data), &content)
+		Stream:     stream,
+		StreamKeys: sortedKeys[string](stream),
+		Message:    data}
+
+	var fields map[string]interface{}
+	err := json.Unmarshal([]byte(data), &fields)
 	if err == nil {
-		message, ok := content["message"].(string)
+		message, ok := fields["message"].(string)
 		if ok {
+			// Remvoe the "message" and any keys of stream from the map
+			delete(fields, "message")
+			for _, k := range result.StreamKeys {
+				delete(fields, k)
+			}
 			result.Message = message
-			result.Fields = content
+			result.Fields = fields
+			result.FieldsKeys = sortedKeys[string](fields)
 		}
 	}
 	return &result

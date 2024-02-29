@@ -16,19 +16,19 @@ func toJson(v interface {}) string {
   return string(b)
 }
 
-templ LogList(autorefresh bool, logs []*Log) {
+templ LogList(conf LogListConfig, logs []*Log) {
   @Base(TopLevelLog, "Log list") {
     @Row("refresh") {
       @Col(6) {
-        if autorefresh {
-          <a class="btn btn-primary" href="/log/">Turn off autorefresh</a>
-          <div hx-get="/log/?autorefresh=1"
+        if conf.AutoRefresh {
+          <a class="btn btn-primary" href={conf.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
+          <div hx-get={conf.ToLinkString()}
                hx-trigger="every 1s"
                hx-target="#logs"
                hx-select="#logs" />
         } else {
-          <a class="btn btn-primary" href="/log/?autorefresh=1">Turn on autorefresh</a>
-          <a class="btn btn-primary" href="/log/">Refresh</a>
+          <a class="btn btn-primary" href={conf.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
+          <a class="btn btn-primary" href={conf.ToLink()}>Refresh</a>
         }
       }
     }
@@ -36,7 +36,7 @@ templ LogList(autorefresh bool, logs []*Log) {
       @Col(12) {
         <table class="table">
           <thead>
-            if !autorefresh {
+            if !conf.AutoRefresh {
             <th scope="col">Op</th>
             }
             <th scope="col">Stream</th>
@@ -47,7 +47,7 @@ templ LogList(autorefresh bool, logs []*Log) {
           <tbody>
             for _, log := range logs {
               <tr>
-                if !autorefresh {
+                if !conf.AutoRefresh {
                 <td>
                   <div class="btn-group">
                     <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
@@ -56,18 +56,29 @@ templ LogList(autorefresh bool, logs []*Log) {
                 </td>
                 }
                 <td>
-                  // One way to do it (quite long)
-                  // {log.StreamString()}
-
-                  for _, k := range sortedKeys[string](log.Stream) {
-                    <p>{k}={log.Stream[k]}</p>
-                  }
+                  if conf.Expand != log.Hash() {
+                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(log.Hash()).ToLink()}>+
+                      ..{strconv.Itoa(len(log.StreamKeys))}..
+                    </a>
+                  } else {
+                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(0).ToLink()}>-</a>
+                    for _, k := range log.StreamKeys {
+                      <p>{k}={log.Stream[k]}</p>
+                    }
+                 }
 
                 </td>
                 <td>{strconv.Itoa(log.Timestamp)}</td>
                 <td>
-                  for _, k := range sortedKeys[string](log.Fields) {
-                    <p>{k}={toJson(log.Fields[k])}</p>
+                  if conf.Expand != log.Hash() {
+                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(log.Hash()).ToLink()}>+
+                      {strconv.Itoa(len(log.FieldsKeys))}
+                    </a>
+                  } else {
+                    <a class="btn btn-primary btn-sm" href={conf.WithExpand(0).ToLink()}>-</a>
+                    for _, k := range log.FieldsKeys {
+                      <p>{k}={toJson(log.Fields[k])}</p>
+                    }
                   }
                 </td>
                 <td>{log.Message}</td>

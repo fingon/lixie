@@ -13,6 +13,7 @@ build: $(BINARY)
 $(BINARY): $(wildcard *.go) $(wildcard *.templ)
 	templ generate .
 	go build .
+	go test
 
 clean:
 	rm -f *_templ.go *_templ.txt $(BINARY)

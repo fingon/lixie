@@ -175,7 +175,7 @@ func logListHandler(db *Database) http.Handler {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		LogList(r.FormValue("autorefresh") != "", logs).Render(r.Context(), w)
+		LogList(NewLogListConfig(r), logs).Render(r.Context(), w)
 	})
 }
 
@@ -249,7 +249,7 @@ func main() {
 	ctx := context.Background()
 	err := run(ctx, os.Args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%w\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 }
