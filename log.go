@@ -79,7 +79,7 @@ func NewLog(timestamp int, stream map[string]string, data string) *Log {
 	return &result
 }
 
-func retrieveLogs(rules []*LogRule, r *http.Request) ([]*Log, error) {
+func retrieveLogs(r *http.Request) ([]*Log, error) {
 	logs := []*Log{}
 
 	// TBD don't hardcode endpoint and query
@@ -135,4 +135,18 @@ func retrieveLogs(rules []*LogRule, r *http.Request) ([]*Log, error) {
 	})
 
 	return logs, nil
+}
+
+func logListHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// fmt.Printf("starting logs query\n")
+		logs, err := retrieveLogs(r)
+		if err != nil {
+			// fmt.Printf("logs query failed: %w\n", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		LogList(LogListModel{Config: NewLogListConfig(r),
+			Logs: logs}).Render(r.Context(), w)
+	})
 }

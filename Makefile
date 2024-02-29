@@ -5,21 +5,27 @@
 #
 
 BINARY=lixie
+TEMPLATES = $(wildcard *.templ)
+GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
 
 build: $(BINARY)
 
-# Note: This is somewhat lazy - we don't try to be smart about when to
-# generate something
-$(BINARY): $(wildcard *.go) $(wildcard *.templ)
-	templ generate .
+$(BINARY): $(wildcard *.go) $(GENERATED)
 	go build .
 	go test
 
+.PHONY: clean
 clean:
 	rm -f *_templ.go *_templ.txt $(BINARY)
 
+.PHONY: install-templ
 install-templ:
 	go install github.com/a-h/templ/cmd/templ@latest
 
+.PHONY: serve
 serve:
 	templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
+
+
+%_templ.go: %.templ
+	templ generate -f $<

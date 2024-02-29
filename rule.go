@@ -8,6 +8,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
@@ -96,4 +97,79 @@ func NewLogRuleFromForm(r *http.Request) (result *LogRule, err error) {
 	// Save is dealt with externally
 	result = &rule
 	return
+}
+
+func logRuleEditHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		rule, err := NewLogRuleFromForm(r)
+		if err != nil {
+			// TODO log error?
+			return
+		}
+		if r.FormValue(actionSave) != "" {
+			// Look for existing rule first
+			for _, v := range db.LogRules {
+				if v.Id == rule.Id {
+					// TODO do we want to error if version differs?
+					if v.Version == rule.Version {
+						*v = *rule
+						v.Version++
+					} else {
+						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
+					}
+					http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+					return
+				}
+			}
+
+			// Not found. Add new one.
+			fmt.Printf("Adding new rule\n")
+			db.Add(*rule)
+			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+			return
+		}
+		LogRuleEdit(*rule).Render(r.Context(), w)
+	})
+}
+
+func logRuleDeleteSpecificHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rid_string := r.PathValue("id")
+		rid, err := strconv.Atoi(rid_string)
+		if err != nil {
+			// TODO handle error
+			return
+		}
+		if db.Delete(rid) {
+			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+			return
+		}
+		http.NotFound(w, r)
+	})
+}
+
+func logRuleEditSpecificHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rid_string := r.PathValue("id")
+		rid, err := strconv.Atoi(rid_string)
+		if err != nil {
+			// TODO handle error
+			return
+		}
+		for _, v := range db.LogRules {
+			if v.Id == rid {
+				LogRuleEdit(*v).Render(r.Context(), w)
+				return
+			}
+		}
+		http.NotFound(w, r)
+	})
+}
+
+func logRuleListHandler(db *Database) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		LogRuleList(db.LogRulesReversed()).Render(r.Context(), w)
+
+	})
 }

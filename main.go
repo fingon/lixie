@@ -16,61 +16,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"slices"
-	"strconv"
 
 	"github.com/a-h/templ"
 )
-
-type Database struct {
-	// TODO: This should be probably really a map
-	LogRules         []*LogRule
-	logRulesReversed []*LogRule
-	nextId           int
-}
-
-func (self *Database) LogRulesReversed() []*LogRule {
-	if self.logRulesReversed == nil {
-		count := len(self.LogRules)
-		reversed := make([]*LogRule, count)
-		for k, v := range self.LogRules {
-			reversed[count-k-1] = v
-		}
-		self.logRulesReversed = reversed
-	}
-	return self.logRulesReversed
-}
-
-func (self *Database) Add(r LogRule) {
-	r.Id = self.nextLogRuleId()
-	self.LogRules = append(self.LogRules, &r)
-	self.logRulesReversed = nil
-}
-
-func (self *Database) Delete(rid int) bool {
-	for i, v := range self.LogRules {
-		if v.Id == rid {
-			self.LogRules = slices.Delete(self.LogRules, i, i+1)
-			self.logRulesReversed = nil
-			return true
-		}
-	}
-	return false
-}
-
-func (self *Database) nextLogRuleId() int {
-	id := self.nextId
-	if id == 0 {
-		id = 1 // Start at 1 even with empty database
-		for _, v := range self.LogRules {
-			if v.Id >= id {
-				id = v.Id + 1
-			}
-		}
-	}
-	self.nextId = id + 1
-	return id
-}
 
 func debugRequest(r *http.Request) {
 	// Loop over header names
@@ -86,98 +34,6 @@ func debugRequest(r *http.Request) {
 	}
 	fmt.Printf("\n")
 
-}
-
-type LogRuleEditHandler struct {
-}
-
-func logRuleEditHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		rule, err := NewLogRuleFromForm(r)
-		if err != nil {
-			// TODO log error?
-			return
-		}
-		if r.FormValue(actionSave) != "" {
-			// Look for existing rule first
-			for _, v := range db.LogRules {
-				if v.Id == rule.Id {
-					// TODO do we want to error if version differs?
-					if v.Version == rule.Version {
-						*v = *rule
-						v.Version++
-					} else {
-						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
-					}
-					http.Redirect(w, r, "/rule/", http.StatusSeeOther)
-					return
-				}
-			}
-
-			// Not found. Add new one.
-			fmt.Printf("Adding new rule\n")
-			db.Add(*rule)
-			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
-			return
-		}
-		LogRuleEdit(*rule).Render(r.Context(), w)
-	})
-}
-
-func logRuleDeleteSpecificHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rid_string := r.PathValue("id")
-		rid, err := strconv.Atoi(rid_string)
-		if err != nil {
-			// TODO handle error
-			return
-		}
-		if db.Delete(rid) {
-			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
-			return
-		}
-		http.NotFound(w, r)
-	})
-}
-
-func logRuleEditSpecificHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rid_string := r.PathValue("id")
-		rid, err := strconv.Atoi(rid_string)
-		if err != nil {
-			// TODO handle error
-			return
-		}
-		for _, v := range db.LogRules {
-			if v.Id == rid {
-				LogRuleEdit(*v).Render(r.Context(), w)
-				return
-			}
-		}
-		http.NotFound(w, r)
-	})
-}
-
-func logRuleListHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		LogRuleList(db.LogRulesReversed()).Render(r.Context(), w)
-
-	})
-}
-
-func logListHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// fmt.Printf("starting logs query\n")
-		logs, err := retrieveLogs(db.LogRules, r)
-		if err != nil {
-			// fmt.Printf("logs query failed: %w\n", err)
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		LogList(LogListModel{Config: NewLogListConfig(r),
-			Logs: logs}).Render(r.Context(), w)
-	})
 }
 
 // Note: While we don't have any static, double comment = static/ will be empty
