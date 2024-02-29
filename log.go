@@ -54,6 +54,10 @@ func (self *Log) Hash() uint64 {
 	return *self.hash
 }
 
+func (self *Log) IdString() string {
+	return "log-" + strconv.FormatUint(self.Hash(), 10)
+}
+
 func NewLog(timestamp int, stream map[string]string, data string) *Log {
 	result := Log{Timestamp: timestamp,
 		Stream:     stream,

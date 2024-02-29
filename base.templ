@@ -31,9 +31,12 @@ templ Base(toplevel int, title string) {
       <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
     </head>
     <body hx-boost="true">
-      <div class="container">
+      <div class="container-fluid">
         @Row("lixie") {
-          <h1>Lixie</h1>
+          @Col(2) {
+            <h1><a href="/">Lixie</a></h1>
+          }
+          @Col(4) {
           <ul class="nav nav-pills">
             for _, info := range topLevelInfos {
               <li class="nav-item">
@@ -45,11 +48,10 @@ templ Base(toplevel int, title string) {
               </li>
             }
           </ul>
-        }
-        if toplevel != TopLevelMain {
-          @Row("pagetitle") {
-            @Col(12) {
-              <h2>{title}</h2>
+          }
+          @Col(2) {
+            if toplevel != TopLevelMain {
+                <h2>{title}</h2>
             }
           }
         }

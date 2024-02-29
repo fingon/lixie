@@ -57,13 +57,12 @@ func run(
 	//defer cancel()
 
 	// Sample content
-	rule := LogRule{Id: 1,
+	db := Database{}
+	db.Add(LogRule{Id: 1,
 		Matchers: []LogFieldMatcher{
 			{Field: "message",
 				Op:    "=",
-				Value: "foobar"}}}
-	rules := []*LogRule{&rule}
-	db := Database{LogRules: rules}
+				Value: "foobar"}}})
 
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)

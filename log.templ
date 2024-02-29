@@ -32,7 +32,7 @@ templ LogList(m LogListModel) {
           </thead>
           <tbody>
             for _, log := range m.Logs {
-              <tr>
+              <tr id={log.IdString()}>
                 if !m.Config.AutoRefresh {
                 <td>
                   <div class="btn-group">
