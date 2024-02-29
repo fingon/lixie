@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/magiconair/properties/assert"
+	"gotest.tools/v3/assert"
 )
 
 type URLWrapper url.Values

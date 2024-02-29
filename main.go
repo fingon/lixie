@@ -58,11 +58,29 @@ func run(
 
 	// Sample content
 	db := Database{}
-	db.Add(LogRule{Id: 1,
-		Matchers: []LogFieldMatcher{
-			{Field: "message",
-				Op:    "=",
-				Value: "foobar"}}})
+
+	// These are highly spammy and at least Loki 2.9.3 bugs this
+	// way consistently
+	db.Add(LogRule{Matchers: []LogFieldMatcher{
+		{Field: "source",
+			Op:    "=",
+			Value: "loki"},
+		{Field: "message",
+			Op:    "=",
+			Value: "error notifying scheduler about finished query"},
+		{Field: "err",
+			Op:    "=",
+			Value: "EOF"}}})
+	db.Add(LogRule{Matchers: []LogFieldMatcher{
+		{Field: "source",
+			Op:    "=",
+			Value: "loki"},
+		{Field: "message",
+			Op:    "=",
+			Value: "error processing requests from scheduler"},
+		{Field: "err",
+			Op:    "=",
+			Value: "rpc error: code = Canceled desc = context canceled"}}})
 
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)

@@ -33,6 +33,9 @@ type LogRule struct {
 	// List of matchers the rule matches against
 	Matchers []LogFieldMatcher
 
+	// Comment (if any)
+	Comment string
+
 	// Version of the rule; any time the rule is changed, the
 	// version is incremented
 	Version int
@@ -172,4 +175,33 @@ func logRuleListHandler(db *Database) http.Handler {
 		LogRuleList(db.LogRulesReversed()).Render(r.Context(), w)
 
 	})
+}
+
+const idKey = "rid"
+const versionKey = "ver"
+
+const hamKey = "h"
+const disabledKey = "d"
+
+const deleteField = "del"
+const fieldField = "f"
+const opField = "o"
+const valueField = "v"
+
+const actionAdd = "a"
+const actionSave = "s"
+
+func fieldId(id int, suffix string) string {
+	return fmt.Sprintf("row-%d-%s", id, suffix)
+}
+
+func ruleTitle(rule LogRule) string {
+	if rule.Id > 0 {
+		return fmt.Sprintf("Log rule editor - editing #%d", rule.Id)
+	}
+	return "Log rule creator"
+}
+
+func ruleIdString(rule LogRule) string {
+	return fmt.Sprintf("%d", rule.Id)
 }

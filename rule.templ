@@ -3,39 +3,6 @@ package main
 import "fmt"
 import "strconv"
 
-const idKey = "rid"
-const versionKey = "ver"
-
-const hamKey = "h"
-const disabledKey = "d"
-
-const deleteField = "del"
-const fieldField = "f"
-const opField = "o"
-const valueField = "v"
-
-const actionAdd = "a"
-const actionSave = "s"
-
-func rowId(id int) string {
-  return fmt.Sprintf("row-%d", id)
-}
-
-func fieldId(id int, suffix string) string {
-  return fmt.Sprintf("row-%d-%s", id, suffix)
-}
-
-func ruleTitle(rule LogRule) string {
-  if (rule.Id > 0) {
-    return fmt.Sprintf("Log rule editor - editing #%d", rule.Id)
-  }
-  return "Log rule creator"
-}
-
-func ruleIdString(rule LogRule) string {
-  return fmt.Sprintf("%d", rule.Id)
-}
-
 templ LogRuleEdit(rule LogRule) {
   @Base(TopLevelRule, ruleTitle(rule)) {
   <form action="/rule/edit">
@@ -62,7 +29,7 @@ templ LogRuleEdit(rule LogRule) {
       }
     }
     for i, matcher := range rule.Matchers {
-      @Row(rowId(i)) {
+      @Row(fmt.Sprintf("row-%d", i)) {
         @Col(1) {
           <input type="submit" class="btn btn-danger" name={fieldId(i, deleteField)} value="Delete" />
         }
@@ -115,6 +82,7 @@ templ LogRuleList(rules []*LogRule) {
             <th scope="col">#</th>
             <th scope="col">State</th>
             <th scope="col">Matchers</th>
+            <th scope="col">Comment</th>
             <th scope="col">Actions</th>
           </thead>
           <tbody>
@@ -138,6 +106,9 @@ templ LogRuleList(rules []*LogRule) {
                 </td>
                 <td class="table-primary">
                   @LogRuleMatchersTable(*rule)
+                </td>
+                <td>
+                  {rule.Comment}
                 </td>
                 <td class="table-secondary">
                   <div class="position-relative">
