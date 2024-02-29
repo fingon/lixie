@@ -15,15 +15,17 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/cespare/xxhash"
 )
 
 type Log struct {
 	Timestamp int
-	Metric    map[string]string
 	Stream    map[string]string
+	Fields    map[string]interface{}
 	Message   string
 }
 
@@ -31,16 +33,32 @@ func (self *Log) Hash() uint64 {
 	return xxhash.Sum64([]byte(self.Message))
 }
 
-func lokiStringToMessage(data string) string {
+func (self *Log) StreamString() string {
+	parts := []string{}
+	for _, k := range sortedKeys[string](self.Stream) {
+		v := self.Stream[k]
+		parts = append(parts, fmt.Sprintf("%s=%s", k, v))
+	}
+	// TODO this isn't particularly performant, we should really
+	// centralize all 'same' Streams as distinct objects
+	parts = sort.StringSlice(parts)
+	return strings.Join(parts, ",")
+}
+
+func NewLog(timestamp int, stream map[string]string, data string) *Log {
+	result := Log{Timestamp: timestamp,
+		Stream:  stream,
+		Message: data}
 	var content map[string]interface{}
 	err := json.Unmarshal([]byte(data), &content)
 	if err == nil {
 		message, ok := content["message"].(string)
 		if ok {
-			return message
+			result.Message = message
+			result.Fields = content
 		}
 	}
-	return data
+	return &result
 }
 
 func retrieveLogs(rules []*LogRule, r *http.Request) ([]*Log, error) {
@@ -87,12 +105,8 @@ func retrieveLogs(rules []*LogRule, r *http.Request) ([]*Log, error) {
 			if err != nil {
 				return nil, err
 			}
-			logs = append(logs, &Log{Timestamp: timestamp,
-				Metric:  result.Metric,
-				Stream:  result.Stream,
-				Message: lokiStringToMessage(value[1])})
+			logs = append(logs, NewLog(timestamp, result.Stream, value[1]))
 		}
-
 	}
 
 	// Loki output is by metric/stream and then by time; we don't

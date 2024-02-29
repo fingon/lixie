@@ -1,10 +1,19 @@
 package main
 
+import "encoding/json"
 import "fmt"
 import "strconv"
 
 func logLink(log *Log, op string) templ.SafeURL {
   return templ.URL(fmt.Sprintf("/log/%d/%s", log.Hash(), op))
+}
+
+func toJson(v interface {}) string {
+  b, err := json.Marshal(v)
+  if (err != nil) {
+    return ""
+  }
+  return string(b)
 }
 
 templ LogList(autorefresh bool, logs []*Log) {
@@ -13,7 +22,7 @@ templ LogList(autorefresh bool, logs []*Log) {
       @Col(6) {
         if autorefresh {
           <a class="btn btn-primary" href="/log/">Turn off autorefresh</a>
-          <div hx-get="/log/"
+          <div hx-get="/log/?autorefresh=1"
                hx-trigger="every 1s"
                hx-target="#logs"
                hx-select="#logs" />
@@ -30,7 +39,9 @@ templ LogList(autorefresh bool, logs []*Log) {
             if !autorefresh {
             <th scope="col">Op</th>
             }
+            <th scope="col">Stream</th>
             <th scope="col">Timestamp</th>
+            <th scope="col">Fields</th>
             <th scope="col">Message</th>
           </thead>
           <tbody>
@@ -44,7 +55,21 @@ templ LogList(autorefresh bool, logs []*Log) {
                   </div>
                 </td>
                 }
+                <td>
+                  // One way to do it (quite long)
+                  // {log.StreamString()}
+
+                  for _, k := range sortedKeys[string](log.Stream) {
+                    <p>{k}={log.Stream[k]}</p>
+                  }
+
+                </td>
                 <td>{strconv.Itoa(log.Timestamp)}</td>
+                <td>
+                  for _, k := range sortedKeys[string](log.Fields) {
+                    <p>{k}={toJson(log.Fields[k])}</p>
+                  }
+                </td>
                 <td>{log.Message}</td>
               </tr>
             }
