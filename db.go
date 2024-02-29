@@ -165,3 +165,31 @@ func (self *Database) Logs() []*Log {
 	self.logs = append(logs, self.logs...)
 	return self.logs
 }
+
+func (self *Database) getLogByHash(hash uint64) *Log {
+	for _, log := range self.logs {
+		if log.Hash() == hash {
+			return log
+		}
+	}
+	return nil
+}
+
+func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
+	log := self.getLogByHash(hash)
+	if log == nil {
+		return false
+	}
+	// Add filters - message and then all Loki labels with cardinality > 1
+	rule := LogRule{Ham: ham, Matchers: []LogFieldMatcher{{
+		Field: "message",
+		Op:    "=",
+		Value: log.Message}}}
+	for _, k := range log.StreamKeys {
+		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Field: k,
+			Op:    "=",
+			Value: log.Stream[k]})
+	}
+	self.Add(rule)
+	return true
+}

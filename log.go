@@ -10,6 +10,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/a-h/templ"
@@ -76,4 +77,20 @@ func NewLog(timestamp int, stream map[string]string, data string) *Log {
 		}
 	}
 	return &result
+}
+
+func logClassifyHandler(db *Database, ham bool) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hash_string := r.PathValue("hash")
+		hash, err := strconv.ParseUint(hash_string, 10, 64)
+		if err != nil {
+			// TODO handle error
+			return
+		}
+		if db.ClassifyHash(hash, ham) {
+			http.Redirect(w, r, "/log/", http.StatusSeeOther)
+			return
+		}
+		http.NotFound(w, r)
+	})
 }

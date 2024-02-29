@@ -106,6 +106,8 @@ func run(
 	http.Handle("/{$}", main_handler)
 	http.Handle("/index.html", main_handler)
 	http.Handle("/log/{$}", logListHandler(&db))
+	http.Handle("/log/{hash}/ham", logClassifyHandler(&db, true))
+	http.Handle("/log/{hash}/spam", logClassifyHandler(&db, false))
 	http.Handle("/rule/{$}", logRuleListHandler(&db))
 	http.Handle("/rule/edit", logRuleEditHandler(&db))
 	http.Handle("/rule/{id}/delete", logRuleDeleteSpecificHandler(&db))

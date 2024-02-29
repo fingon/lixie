@@ -20,9 +20,16 @@ templ LogList(m LogListModel) {
     }
     @Row("logs") {
       @Col(12) {
-        {strconv.Itoa(len(m.Logs))} logs and
+        if len(m.Logs) > 1 {
+          {strconv.Itoa(len(m.Logs))} logs and
           {strconv.Itoa(len(m.Spam))} spam covering
-          {strconv.Itoa((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9)} seconds
+          {strconv.Itoa((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9)}
+          seconds
+        } else if len(m.Spam) > 1 {
+          {strconv.Itoa(len(m.Spam))} spam covering
+          {strconv.Itoa((m.Spam[0].Timestamp-m.Spam[len(m.Spam)-1].Timestamp)/1e9)}
+          seconds
+        }
         <table class="table">
           <thead>
             if !m.Config.AutoRefresh {
