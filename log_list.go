@@ -16,34 +16,34 @@ import (
 )
 
 type LogListConfig struct {
+	// parse form + send query
 	AutoRefresh bool
 	Expand      uint64
-}
 
-type FormValued interface {
-	FormValue(string) string
+	// send query-only
+	Before uint64
 }
 
 const logListBase = "/log/"
-
 const autoRefreshKey = "ar"
 const expandKey = "exp"
+const beforeKey = "b"
 
 func NewLogListConfig(r FormValued) LogListConfig {
 	autorefresh := r.FormValue(autoRefreshKey) != ""
 	expand := uint64(0)
-	sv := r.FormValue(expandKey)
-	if sv != "" {
-		v, err := strconv.ParseUint(sv, 10, 64)
-		if err == nil {
-			expand = v
-		}
-	}
+	uint64FromForm(r, expandKey, &expand)
+	// before is omitted intentionally
 	return LogListConfig{AutoRefresh: autorefresh, Expand: expand}
 }
 
 func (self LogListConfig) WithAutoRefresh(v bool) LogListConfig {
 	self.AutoRefresh = v
+	return self
+}
+
+func (self LogListConfig) WithBefore(v uint64) LogListConfig {
+	self.Before = v
 	return self
 }
 
@@ -58,6 +58,9 @@ func (self LogListConfig) ToLinkString() string {
 	v := url.Values{}
 	if self.AutoRefresh {
 		v.Set(autoRefreshKey, "1")
+	}
+	if self.Before != 0 {
+		v.Set(beforeKey, strconv.FormatUint(self.Before, 10))
 	}
 	if self.Expand != 0 {
 		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
@@ -76,7 +79,10 @@ type LogListModel struct {
 	Config   LogListConfig
 	Logs     []*Log
 	LogRules []*LogRule
-	Spam     []*Log
+
+	// Paging support
+	BeforeHash uint64
+	Limit      int
 }
 
 func (self *LogListModel) LogVerdict(log *Log) int {
@@ -84,29 +90,39 @@ func (self *LogListModel) LogVerdict(log *Log) int {
 	return LogVerdict(log, self.LogRules)
 }
 
-func (self *LogListModel) SplitSpam() {
+func (self *LogListModel) Filter() {
 	// Some spare capacity but who really cares
-	logs := make([]*Log, 0, len(self.Logs))
-	spam := make([]*Log, 0, len(self.Logs))
+	logs := make([]*Log, 0, self.Limit)
+	active := self.BeforeHash == 0
 	for _, log := range self.Logs {
-		if self.LogVerdict(log) != LogVerdictSpam {
-			logs = append(logs, log)
-		} else {
-			spam = append(spam, log)
+		if !active {
+			if log.Hash() == self.BeforeHash {
+				active = true
+			}
+			continue
+		}
+		if self.LogVerdict(log) == LogVerdictSpam {
+			continue
+		}
+		logs = append(logs, log)
+		if len(logs) == self.Limit {
+			break
 		}
 	}
 	self.Logs = logs
-	self.Spam = spam
 }
 
 func logListHandler(db *Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// fmt.Printf("starting logs query\n")
+		var before_hash uint64
+		uint64FromForm(r, beforeKey, &before_hash)
 		logs := db.Logs()
 		model := LogListModel{Config: NewLogListConfig(r),
-			Logs:     logs,
-			LogRules: db.LogRules}
-		model.SplitSpam()
+			BeforeHash: before_hash,
+			Limit:      20,
+			Logs:       logs,
+			LogRules:   db.LogRules}
+		model.Filter()
 		LogList(model).Render(r.Context(), w)
 	})
 }

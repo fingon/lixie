@@ -33,6 +33,20 @@ func TestLogList(t *testing.T) {
 	u, err := url.Parse(s)
 	assert.Equal(t, err, nil)
 
-	conf2 := NewLogListConfig(URLWrapper(u.Query()))
-	assert.Equal(t, conf, conf2)
+	conf_ := NewLogListConfig(URLWrapper(u.Query()))
+	assert.Equal(t, conf, conf_)
+
+	// Ensure that sticking in Before means it actually won't be
+	// the same after parsing (it shouldn't be parsed here)
+	conf.Before = 13
+	s2 := conf.ToLinkString()
+
+	assert.Assert(t, s != s2)
+
+	u, err = url.Parse(s2)
+	assert.Equal(t, err, nil)
+
+	conf2_ := NewLogListConfig(URLWrapper(u.Query()))
+	assert.Equal(t, conf_, conf2_)
+
 }

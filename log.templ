@@ -20,20 +20,10 @@ templ LogList(m LogListModel) {
     }
     @Row("logs") {
       @Col(12) {
-        if len(m.Logs) > 1 {
-          {strconv.Itoa(len(m.Logs))} logs and
-          {strconv.Itoa(len(m.Spam))} spam covering
-          {strconv.Itoa(int((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9))}
-          seconds
-        } else if len(m.Spam) > 1 {
-          {strconv.Itoa(len(m.Spam))} spam covering
-          {strconv.Itoa(int((m.Spam[0].Timestamp-m.Spam[len(m.Spam)-1].Timestamp)/1e9))}
-          seconds
-        }
         <table class="table">
           <thead>
             if !m.Config.AutoRefresh {
-            <th scope="col">Op</th>
+              <th scope="col">Op</th>
             }
             <th scope="col">Time</th>
             <th scope="col">Stream</th>
@@ -89,7 +79,20 @@ templ LogList(m LogListModel) {
                   }
                 </td>
               </tr>
-            }
+              }
+              if len(m.Logs) == m.Limit && !m.Config.AutoRefresh {
+              <tr>
+                <td colspan="4">
+                  <span hx-target="closest tr"
+                        hx-trigger="revealed"
+                        hx-swap="outerHTML"
+                        hx-select="tbody > tr"
+                        hx-get={m.Config.WithBefore(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
+                    Loading More...
+                  </span>
+                </td>
+              </tr>
+              }
           </tbody>
         </table>
       }

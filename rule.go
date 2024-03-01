@@ -60,23 +60,6 @@ const valueField = "v"
 const actionAdd = "a"
 const actionSave = "s"
 
-func intFromForm(r FormValued, key string, value *int) (found bool, err error) {
-	raw := r.FormValue(key)
-	if raw == "" {
-		return
-	}
-	*value, err = strconv.Atoi(raw)
-	return
-}
-
-func boolFromForm(r FormValued, key string, value *bool) {
-	raw := r.FormValue(key)
-	if raw == "" {
-		return
-	}
-	*value = true
-}
-
 func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 	rule := LogRule{}
 
