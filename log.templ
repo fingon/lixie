@@ -54,7 +54,7 @@ templ LogList(m LogListModel) {
                   } else {
                     <a href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.StreamKeys {
-                      <p>{k}={log.Stream[k]}</p>
+                      {k}={log.Stream[k]}<br/>
                     }
                  }
 
@@ -67,7 +67,7 @@ templ LogList(m LogListModel) {
                   } else {
                     <a href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.FieldsKeys {
-                      <p>{k}={toJson(log.Fields[k])}</p>
+                      {k}={toJson(log.Fields[k])}<br/>
                     }
                   }
                 </td>

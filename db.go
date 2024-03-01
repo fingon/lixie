@@ -95,8 +95,7 @@ func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	v := url.Values{}
 	v.Set("query", "{forwarder=\"vector\"}")
 	//v.Set("direction", "backward")
-	// default is 100; wonder if we really want more at some point?
-	// v.Set("limit", "1000")
+	v.Set("limit", "5000")
 	if start > 0 {
 		v.Set("start", strconv.FormatInt(start, 10))
 	}
