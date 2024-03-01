@@ -40,25 +40,8 @@ func debugRequest(r *http.Request) {
 // //go:embed all:static
 var embedContent embed.FS
 
-// These might be also useful at some point
-//
-//	getenv func(string) string,
-//	stdin  io.Reader,
-//	stdout, stderr io.Writer,
-func run(
-	ctx context.Context,
-	args []string) error {
-
-	// This would be relevant only if we handled our own context.
-	// However, http.ListenAndServe catches os.Interrupt so this
-	// is not necessary:
-	//
-	//ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	//defer cancel()
-
-	// Sample content
-	db := Database{}
-
+func setupSampleDatabase(path string) *Database {
+	db := &Database{path: path}
 	// These are highly spammy and at least Loki 2.9.3 bugs this
 	// way consistently
 	db.Add(LogRule{Matchers: []LogFieldMatcher{
@@ -81,6 +64,34 @@ func run(
 		{Field: "err",
 			Op:    "=",
 			Value: "rpc error: code = Canceled desc = context canceled"}}})
+	return db
+}
+
+func setupDatabase() *Database {
+	path := "db.json"
+	db, err := NewDatabaseFromFile(path)
+	if err != nil {
+		fmt.Printf("Unable to read %s: %s - setting up sample instead", path, err.Error())
+		return setupSampleDatabase("sample-db.json")
+	}
+	return db
+}
+
+// These might be also useful at some point
+//
+//	getenv func(string) string,
+//	stdin  io.Reader,
+//	stdout, stderr io.Writer,
+func run(
+	ctx context.Context,
+	args []string) error {
+
+	// This would be relevant only if we handled our own context.
+	// However, http.ListenAndServe catches os.Interrupt so this
+	// is not necessary:
+	//
+	//ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	//defer cancel()
 
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
@@ -96,6 +107,8 @@ func run(
 		log.Panic(err)
 	}
 
+	db := setupDatabase()
+
 	// Configure the routes
 	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	// Other options: StatusMovedPermanently, StatusFound
@@ -105,13 +118,13 @@ func run(
 	main_handler := templ.Handler(MainPage())
 	http.Handle("/{$}", main_handler)
 	http.Handle("/index.html", main_handler)
-	http.Handle("/log/{$}", logListHandler(&db))
-	http.Handle("/log/{hash}/ham", logClassifyHandler(&db, true))
-	http.Handle("/log/{hash}/spam", logClassifyHandler(&db, false))
-	http.Handle("/rule/{$}", logRuleListHandler(&db))
-	http.Handle("/rule/edit", logRuleEditHandler(&db))
-	http.Handle("/rule/{id}/delete", logRuleDeleteSpecificHandler(&db))
-	http.Handle("/rule/{id}/edit", logRuleEditSpecificHandler(&db))
+	http.Handle("/log/{$}", logListHandler(db))
+	http.Handle("/log/{hash}/ham", logClassifyHandler(db, true))
+	http.Handle("/log/{hash}/spam", logClassifyHandler(db, false))
+	http.Handle("/rule/{$}", logRuleListHandler(db))
+	http.Handle("/rule/edit", logRuleEditHandler(db))
+	http.Handle("/rule/{id}/delete", logRuleDeleteSpecificHandler(db))
+	http.Handle("/rule/{id}/edit", logRuleEditSpecificHandler(db))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static_fs))))
 
 	// Start the actual server

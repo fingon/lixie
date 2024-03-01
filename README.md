@@ -21,9 +21,8 @@ tool. Currently there are two planned modes:
 
 ## Features
 
-- configuration file / CLI for the hardcoded stuff (e.g. Loki URL)
-
-- on-disk persistence
+- configuration file / CLI for the hardcoded stuff (e.g. Loki URL, database
+  filename)
 
 ## Big features
 

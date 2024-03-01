@@ -8,12 +8,15 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"slices"
 	"strconv"
 	"sync"
@@ -33,6 +36,9 @@ type Database struct {
 
 	// next id to be added state for rules
 	nextId int
+
+	// Where is this file saved
+	path string
 }
 
 func (self *Database) LogRulesReversed() []*LogRule {
@@ -51,6 +57,8 @@ func (self *Database) Add(r LogRule) {
 	r.Id = self.nextLogRuleId()
 	self.LogRules = append(self.LogRules, &r)
 	self.logRulesReversed = nil
+
+	self.Save()
 }
 
 func (self *Database) Delete(rid int) bool {
@@ -58,6 +66,7 @@ func (self *Database) Delete(rid int) bool {
 		if v.Id == rid {
 			self.LogRules = slices.Delete(self.LogRules, i, i+1)
 			self.logRulesReversed = nil
+			self.Save()
 			return true
 		}
 	}
@@ -192,4 +201,40 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
 	}
 	self.Add(rule)
 	return true
+}
+
+func (self *Database) Save() {
+	b, err := json.Marshal(self)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	temp := fmt.Sprintf("%s.tmp", self.path)
+	f, err := os.OpenFile(temp, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Panic(err)
+	}
+	var ib bytes.Buffer
+	json.Indent(&ib, b, "", " ")
+
+	_, err = ib.WriteTo(f)
+	if err != nil {
+		log.Panic(err)
+	}
+	os.Rename(temp, self.path)
+
+	defer f.Close()
+}
+
+func NewDatabaseFromFile(name string) (db *Database, err error) {
+	path := "db.json"
+	f, err := os.Open(path)
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return
+	}
+	db = &Database{}
+	err = json.Unmarshal(data, db)
+	db.path = name
+	return
 }

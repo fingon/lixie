@@ -114,12 +114,13 @@ func logRuleEditHandler(db *Database) http.Handler {
 		}
 		if r.FormValue(actionSave) != "" {
 			// Look for existing rule first
-			for _, v := range db.LogRules {
+			for i, v := range db.LogRules {
 				if v.Id == rule.Id {
 					// TODO do we want to error if version differs?
 					if v.Version == rule.Version {
-						*v = *rule
-						v.Version++
+						rule.Version++
+						db.LogRules[i] = rule
+						db.Save()
 					} else {
 						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
 					}
