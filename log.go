@@ -12,13 +12,15 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/cespare/xxhash"
 )
 
 type Log struct {
-	Timestamp  int
+	Timestamp  int64
+	Time       time.Time
 	Stream     map[string]string
 	StreamKeys []string
 	Fields     map[string]interface{}
@@ -54,8 +56,9 @@ func (self *Log) IdString() string {
 	return "log-" + strconv.FormatUint(self.Hash(), 10)
 }
 
-func NewLog(timestamp int, stream map[string]string, data string) *Log {
+func NewLog(timestamp int64, stream map[string]string, data string) *Log {
 	result := Log{Timestamp: timestamp,
+		Time:       time.UnixMicro(timestamp / 1000),
 		Stream:     stream,
 		StreamKeys: sortedKeys[string](stream),
 		Message:    data,

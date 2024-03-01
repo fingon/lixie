@@ -23,11 +23,11 @@ templ LogList(m LogListModel) {
         if len(m.Logs) > 1 {
           {strconv.Itoa(len(m.Logs))} logs and
           {strconv.Itoa(len(m.Spam))} spam covering
-          {strconv.Itoa((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9)}
+          {strconv.Itoa(int((m.Logs[0].Timestamp-m.Logs[len(m.Logs)-1].Timestamp)/1e9))}
           seconds
         } else if len(m.Spam) > 1 {
           {strconv.Itoa(len(m.Spam))} spam covering
-          {strconv.Itoa((m.Spam[0].Timestamp-m.Spam[len(m.Spam)-1].Timestamp)/1e9)}
+          {strconv.Itoa(int((m.Spam[0].Timestamp-m.Spam[len(m.Spam)-1].Timestamp)/1e9))}
           seconds
         }
         <table class="table">
@@ -35,8 +35,8 @@ templ LogList(m LogListModel) {
             if !m.Config.AutoRefresh {
             <th scope="col">Op</th>
             }
+            <th scope="col">Time</th>
             <th scope="col">Stream</th>
-            <th scope="col">Timestamp</th>
             <th scope="col">Fields</th>
             <th scope="col">Message</th>
           </thead>
@@ -54,28 +54,28 @@ templ LogList(m LogListModel) {
                   </div>
                 </td>
                 }
+                <td>{log.Time.Format("15:04:05.000")}</td>
                 <td>
                   if m.Config.Expand != log.Hash() {
                     source={log.Stream["source"]}
-                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                    <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
                       +{strconv.Itoa(len(log.StreamKeys)-1)}
                     </a>
                   } else {
-                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(0).ToLink()}>-</a>
+                    <a href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.StreamKeys {
                       <p>{k}={log.Stream[k]}</p>
                     }
                  }
 
                 </td>
-                <td>{strconv.Itoa(log.Timestamp)}</td>
                 <td>
                   if m.Config.Expand != log.Hash() {
-                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                    <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
                       +{strconv.Itoa(len(log.FieldsKeys))}
                     </a>
                   } else {
-                    <a class="btn btn-primary btn-sm" href={m.Config.WithExpand(0).ToLink()}>-</a>
+                    <a href={m.Config.WithExpand(0).ToLink()}>-</a>
                     for _, k := range log.FieldsKeys {
                       <p>{k}={toJson(log.Fields[k])}</p>
                     }

@@ -78,7 +78,7 @@ func (self *Database) nextLogRuleId() int {
 	return id
 }
 
-func (self *Database) retrieveLogs(start int) ([]*Log, error) {
+func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	logs := []*Log{}
 
 	// TBD don't hardcode endpoint and query
@@ -89,7 +89,7 @@ func (self *Database) retrieveLogs(start int) ([]*Log, error) {
 	// default is 100; wonder if we really want more at some point?
 	// v.Set("limit", "1000")
 	if start > 0 {
-		v.Set("start", strconv.Itoa(start))
+		v.Set("start", strconv.FormatInt(start, 10))
 	}
 
 	resp, err := http.Get(base + "?" + v.Encode())
@@ -124,7 +124,7 @@ func (self *Database) retrieveLogs(start int) ([]*Log, error) {
 	}
 	for _, result := range result.Data.Result {
 		for _, value := range result.Values {
-			timestamp, err := strconv.Atoi(value[0])
+			timestamp, err := strconv.ParseInt(value[0], 10, 64)
 			if err != nil {
 				return nil, err
 			}
@@ -146,7 +146,7 @@ func (self *Database) Logs() []*Log {
 	self.logLock.Lock()
 	defer self.logLock.Unlock()
 
-	start := 0
+	start := int64(0)
 	if len(self.logs) > 0 {
 		// TODO would be better to get same timestamp + eliminate if it is same entry
 		start = self.logs[0].Timestamp + 1
