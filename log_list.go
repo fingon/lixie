@@ -19,6 +19,7 @@ type LogListConfig struct {
 	// parse form + send query
 	AutoRefresh bool
 	Expand      uint64
+	Filter      int
 
 	// send query-only
 	Before uint64
@@ -28,13 +29,16 @@ const logListBase = "/log/"
 const autoRefreshKey = "ar"
 const expandKey = "exp"
 const beforeKey = "b"
+const filterKey = "f"
 
 func NewLogListConfig(r FormValued) LogListConfig {
 	autorefresh := r.FormValue(autoRefreshKey) != ""
 	expand := uint64(0)
 	uint64FromForm(r, expandKey, &expand)
+	filter := LogVerdictSpam
+	intFromForm(r, filterKey, &filter)
 	// before is omitted intentionally
-	return LogListConfig{AutoRefresh: autorefresh, Expand: expand}
+	return LogListConfig{AutoRefresh: autorefresh, Expand: expand, Filter: filter}
 }
 
 func (self LogListConfig) WithAutoRefresh(v bool) LogListConfig {
@@ -52,10 +56,16 @@ func (self LogListConfig) WithExpand(v uint64) LogListConfig {
 	return self
 }
 
+func (self LogListConfig) WithFilter(v int) LogListConfig {
+	self.Filter = v
+	return self
+}
+
 func (self LogListConfig) ToLinkString() string {
 	// TODO should this be constant or parameter?
 	base := logListBase
 	v := url.Values{}
+	// TODO: Better diffs-from-default handling
 	if self.AutoRefresh {
 		v.Set(autoRefreshKey, "1")
 	}
@@ -64,6 +74,9 @@ func (self LogListConfig) ToLinkString() string {
 	}
 	if self.Expand != 0 {
 		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
+	}
+	if self.Filter != LogVerdictSpam {
+		v.Set(filterKey, strconv.Itoa(self.Filter))
 	}
 	if len(v) == 0 {
 		return base
@@ -101,7 +114,7 @@ func (self *LogListModel) LogVerdict(log *Log) int {
 	return LogVerdict(log, self.LogRules)
 }
 
-func (self *LogListModel) Filter(exclude int) {
+func (self *LogListModel) Filter() {
 	// Some spare capacity but who really cares
 	logs := make([]*Log, 0, self.Limit)
 	active := self.BeforeHash == 0
@@ -112,12 +125,12 @@ func (self *LogListModel) Filter(exclude int) {
 			if log.Hash() == self.BeforeHash {
 				active = true
 			}
-			if self.EnableAccurateCounting && self.LogVerdict(log) != exclude {
+			if self.EnableAccurateCounting && self.LogVerdict(log) != self.Config.Filter {
 				count++
 			}
 			continue
 		}
-		if self.LogVerdict(log) == exclude {
+		if self.LogVerdict(log) == self.Config.Filter {
 			continue
 		}
 		count++
@@ -141,7 +154,7 @@ func logListHandler(db *Database) http.Handler {
 			Limit:      20,
 			Logs:       logs,
 			LogRules:   db.LogRulesReversed()}
-		model.Filter(LogVerdictSpam)
+		model.Filter()
 		LogList(model).Render(r.Context(), w)
 	})
 }

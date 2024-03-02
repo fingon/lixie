@@ -84,17 +84,38 @@ templ LogListTable(m LogListModel) {
 templ LogList(m LogListModel) {
   @Base(TopLevelLog, "Log list") {
     @Row("refresh-and-count") {
-      @Col(6) {
+      @Col(4) {
         if m.Config.AutoRefresh {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
           <div hx-get={m.Config.ToLinkString()}
                hx-trigger="every 1s"
-               hx-target="#logs"
-               hx-select="#logs" />
+               hx-target="#container"
+               hx-select="#container" />
         } else {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
           <a class="btn btn-primary" href={m.Config.ToLink()}>Refresh</a>
         }
+      }
+      @Col(6) {
+        <ul class="nav nav-pills">
+          for verdict := range NumLogVerdicts {
+            <li class="nav-item">
+              if m.Config.Filter == verdict {
+                <a class="nav-link active bg-success-subtle" href={m.Config.ToLink()}>
+                  {logVerdictToString(verdict)} filtered</a>
+              } else {
+                <a class="nav-link" href={m.Config.WithFilter(verdict).ToLink()}>
+                  Filter {logVerdictToString(verdict)}</a>
+              }
+            </li>
+          }
+        </ul>
+      }
+      @Col(2) {
+        <div class="float-end">
+          {strconv.Itoa(m.TotalCount)} log entries<br/>
+          {strconv.Itoa(m.FilteredCount)} shown
+        </div>
       }
     }
     @Row("logs") {

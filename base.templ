@@ -31,7 +31,7 @@ templ Base(toplevel int, title string) {
       <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
     </head>
     <body hx-boost="true">
-      <div class="container-fluid" style="padding-left:0;padding-right:0">
+      <div class="container-fluid" style="padding-left:0;padding-right:0" id="container">
         <div class="bg-success-subtle">
         @Row("nav") {
           @Col(2) {

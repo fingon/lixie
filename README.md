@@ -25,9 +25,6 @@ tool. Currently there are two planned modes:
 
 - add visibility for how much each rule is used in the rule editing UI
 
-- better log list selection features (current non-spam is ok default, but
-  also seeing spam, ham only, all might be valid?)
-
 - configuration file / CLI for the hardcoded stuff (e.g. Loki URL, database
   filename)
 

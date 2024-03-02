@@ -28,7 +28,7 @@ func (self URLWrapper) FormValue(k string) string {
 }
 
 func TestLogList(t *testing.T) {
-	conf := LogListConfig{Expand: uint64(42), AutoRefresh: true}
+	conf := LogListConfig{Expand: uint64(42), AutoRefresh: true, Filter: 7}
 	s := conf.ToLinkString()
 	u, err := url.Parse(s)
 	assert.Equal(t, err, nil)

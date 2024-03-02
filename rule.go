@@ -132,13 +132,15 @@ func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 }
 
 func findMatchingLogs(db *Database, rule *LogRule) *LogListModel {
-	m := LogListModel{Logs: db.Logs(),
+	m := LogListModel{
+		Config:                 LogListConfig{Filter: LogVerdictUnknown},
+		Logs:                   db.Logs(),
 		LogRules:               []*LogRule{rule},
 		DisableActions:         true,
 		DisablePagination:      true,
 		EnableAccurateCounting: true,
 		Limit:                  5}
-	m.Filter(LogVerdictUnknown)
+	m.Filter()
 	return &m
 }
 

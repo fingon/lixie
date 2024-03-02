@@ -11,7 +11,21 @@ const (
 	LogVerdictUnknown int = iota
 	LogVerdictHam
 	LogVerdictSpam
+	LogVerdictNothing
+	NumLogVerdicts
 )
+
+func logVerdictToString(verdict int) string {
+	switch verdict {
+	case LogVerdictHam:
+		return "Ham"
+	case LogVerdictSpam:
+		return "Spam"
+	case LogVerdictNothing:
+		return "Nothing"
+	}
+	return "Unknown"
+}
 
 func logMatchesRule(log *Log, rule *LogRule) bool {
 	if rule.Disabled {
