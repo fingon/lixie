@@ -56,8 +56,6 @@ func (self *Database) LogRulesReversed() []*LogRule {
 func (self *Database) Add(r LogRule) {
 	r.Id = self.nextLogRuleId()
 	self.LogRules = append(self.LogRules, &r)
-	self.logRulesReversed = nil
-
 	self.Save()
 }
 
@@ -65,7 +63,6 @@ func (self *Database) Delete(rid int) bool {
 	for i, v := range self.LogRules {
 		if v.Id == rid {
 			self.LogRules = slices.Delete(self.LogRules, i, i+1)
-			self.logRulesReversed = nil
 			self.Save()
 			return true
 		}
@@ -203,6 +200,8 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
 }
 
 func (self *Database) Save() {
+	self.logRulesReversed = nil
+
 	b, err := json.Marshal(self)
 	if err != nil {
 		log.Panic(err)

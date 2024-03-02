@@ -3,7 +3,7 @@ package main
 import "fmt"
 import "strconv"
 
-templ LogRuleEdit(rule LogRule) {
+templ LogRuleEdit(rule LogRule, matches *LogListModel) {
   @Base(TopLevelRule, ruleTitle(rule)) {
   <form action="/rule/edit">
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
@@ -41,19 +41,51 @@ templ LogRuleEdit(rule LogRule) {
         }
         @Col(2) {
           <input class="form-text" type="text" name={fieldId(i, fieldField)}
+                 hx-trigger="change, keyup delay:200ms changed"
+                 hx-post="/rule/edit"
+                 hx-select="#logs"
+                 hx-swap="outerHTML"
+                 hx-target="#logs"
                  value={matcher.Field} placeholder="Field name to match" />
         }
         @Col(1) {
-          <input class="form-text" type="text" name={fieldId(i, opField)}
-                 value={matcher.Op} placeholder="Operation to use (e.g. =)" />
+          <select name={fieldId(i, opField)}
+                  hx-post="/rule/edit"
+                  hx-select="#logs"
+                  hx-swap="outerHTML"
+                  hx-target="#logs"
+                  hx-trigger="change"
+                  >
+            <option value="=" selected?={matcher.Op=="="}>=</option>
+            <option value="=~" selected?={matcher.Op=="=~"}>=~</option>
+          </select>
         }
         @Col(8) {
-         <input class="form-text" type="text" name={fieldId(i, valueField)}
-                value={matcher.Value} placeholder="Value of the operation" />
+          <input class="form-text" type="text" name={fieldId(i, valueField)}
+                 hx-trigger="change, keyup delay:200ms changed"
+                 hx-post="/rule/edit"
+                 hx-select="#logs"
+                 hx-swap="outerHTML"
+                 hx-target="#logs"
+                 value={matcher.Value} placeholder="Value of the operation" />
         }
       }
     }
   </form>
+  if matches != nil {
+    @Row("logs") {
+      @Col(12) {
+        if len(matches.Logs) > 0 {
+          <p>{strconv.Itoa(matches.FilteredCount)} matching logs out of
+            {strconv.Itoa(matches.TotalCount)}
+          </p>
+          @LogListTable(*matches)
+        } else {
+          No matching logs.
+        }
+      }
+    }
+  }
   }
 }
 

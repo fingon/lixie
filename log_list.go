@@ -80,9 +80,20 @@ type LogListModel struct {
 	Logs     []*Log
 	LogRules []*LogRule
 
+	ExcludeVerdict int
+
+	// Actions
+	DisableActions bool
+
 	// Paging support
-	BeforeHash uint64
-	Limit      int
+	BeforeHash        uint64
+	DisablePagination bool
+	Limit             int
+
+	// Convenience results from filter()
+	EnableAccurateCounting bool
+	FilteredCount          int
+	TotalCount             int
 }
 
 func (self *LogListModel) LogVerdict(log *Log) int {
@@ -90,26 +101,34 @@ func (self *LogListModel) LogVerdict(log *Log) int {
 	return LogVerdict(log, self.LogRules)
 }
 
-func (self *LogListModel) Filter() {
+func (self *LogListModel) Filter(exclude int) {
 	// Some spare capacity but who really cares
 	logs := make([]*Log, 0, self.Limit)
 	active := self.BeforeHash == 0
+	count := 0
+	self.TotalCount = len(self.Logs)
 	for _, log := range self.Logs {
 		if !active {
 			if log.Hash() == self.BeforeHash {
 				active = true
 			}
+			if self.EnableAccurateCounting && self.LogVerdict(log) != exclude {
+				count++
+			}
 			continue
 		}
-		if self.LogVerdict(log) == LogVerdictSpam {
+		if self.LogVerdict(log) == exclude {
 			continue
 		}
-		logs = append(logs, log)
-		if len(logs) == self.Limit {
+		count++
+		if len(logs) < self.Limit {
+			logs = append(logs, log)
+		} else if !self.EnableAccurateCounting {
 			break
 		}
 	}
 	self.Logs = logs
+	self.FilteredCount = count
 }
 
 func logListHandler(db *Database) http.Handler {
@@ -121,8 +140,8 @@ func logListHandler(db *Database) http.Handler {
 			BeforeHash: before_hash,
 			Limit:      20,
 			Logs:       logs,
-			LogRules:   db.LogRules}
-		model.Filter()
+			LogRules:   db.LogRulesReversed()}
+		model.Filter(LogVerdictSpam)
 		LogList(model).Render(r.Context(), w)
 	})
 }

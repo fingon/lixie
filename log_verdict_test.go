@@ -13,7 +13,7 @@ import (
 	"gotest.tools/v3/assert"
 )
 
-func TestLogVerdict(t *testing.T) {
+func TestLogVerdictEq(t *testing.T) {
 	stream := map[string]string{
 		"f": "v",
 	}
@@ -45,10 +45,32 @@ func TestLogVerdict(t *testing.T) {
 	verdict = LogVerdict(log, []*LogRule{&rule4_disabled})
 	assert.Equal(t, verdict, LogVerdictUnknown)
 
-	// Case: Last write wins, ham flag
+	// Case: First write wins, spam flag
 	rule5_ham := rule2_ok
 	rule5_ham.Ham = true
 	verdict = LogVerdict(log, []*LogRule{&rule2_ok, &rule5_ham})
-	assert.Equal(t, verdict, LogVerdictHam)
+	assert.Equal(t, verdict, LogVerdictSpam)
 
+}
+
+func TestLogVerdictRe(t *testing.T) {
+	stream := map[string]string{
+		"f": "v",
+	}
+	log := NewLog(123, stream, `{"message": "msg", "k": "WHEE"}`)
+
+	// Case: message field
+	rule := LogRule{Matchers: []LogFieldMatcher{{Field: "k", Op: "=~", Value: ".*H.*"}}}
+	verdict := LogVerdict(log, []*LogRule{&rule})
+	assert.Equal(t, verdict, LogVerdictSpam)
+
+	// Case: message field - ensure it is not only prefix
+	rule = LogRule{Matchers: []LogFieldMatcher{{Field: "k", Op: "=~", Value: "W"}}}
+	verdict = LogVerdict(log, []*LogRule{&rule})
+	assert.Equal(t, verdict, LogVerdictUnknown)
+
+	// Case: message field - ensure it is not only suffix
+	rule = LogRule{Matchers: []LogFieldMatcher{{Field: "k", Op: "=~", Value: "E"}}}
+	verdict = LogVerdict(log, []*LogRule{&rule})
+	assert.Equal(t, verdict, LogVerdictUnknown)
 }

@@ -4,14 +4,15 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Thu Feb 29 20:21:55 2024 mstenber
- * Last modified: Thu Feb 29 20:40:15 2024 mstenber
- * Edit time:     12 min
+ * Last modified: Sat Mar  2 09:36:59 2024 mstenber
+ * Edit time:     13 min
  *
  */
 
 package main
 
 import (
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -57,5 +58,5 @@ func TestLogRuleEndecode(t *testing.T) {
 	rule2, err := NewLogRuleFromForm(w)
 	assert.Equal(t, err, nil)
 
-	assert.DeepEqual(t, rule, *rule2)
+	assert.Assert(t, reflect.DeepEqual(rule, *rule2))
 }

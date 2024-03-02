@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"slices"
 	"strconv"
 )
@@ -18,6 +19,32 @@ type LogFieldMatcher struct {
 	Field string
 	Op    string
 	Value string
+
+	match func(string) bool
+}
+
+func (self *LogFieldMatcher) Match(s string) bool {
+	if self.match == nil {
+		if self.Op == "=" {
+			self.match = func(s string) bool {
+				return s == self.Value
+			}
+		}
+		if self.Op == "=~" {
+			re, err := regexp.Compile(fmt.Sprintf("^%s$", self.Value))
+			if err == nil {
+				self.match = func(s string) bool {
+					return re.Match([]byte(s))
+				}
+			}
+		}
+		if self.match == nil {
+			self.match = func(s string) bool {
+				return false
+			}
+		}
+	}
+	return self.match(s)
 }
 
 type LogRule struct {
@@ -104,6 +131,17 @@ func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 	return
 }
 
+func findMatchingLogs(db *Database, rule *LogRule) *LogListModel {
+	m := LogListModel{Logs: db.Logs(),
+		LogRules:               []*LogRule{rule},
+		DisableActions:         true,
+		DisablePagination:      true,
+		EnableAccurateCounting: true,
+		Limit:                  5}
+	m.Filter(LogVerdictUnknown)
+	return &m
+}
+
 func logRuleEditHandler(db *Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -135,7 +173,8 @@ func logRuleEditHandler(db *Database) http.Handler {
 			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
 			return
 		}
-		LogRuleEdit(*rule).Render(r.Context(), w)
+		matches := findMatchingLogs(db, rule)
+		LogRuleEdit(*rule, matches).Render(r.Context(), w)
 	})
 }
 
@@ -163,9 +202,10 @@ func logRuleEditSpecificHandler(db *Database) http.Handler {
 			// TODO handle error
 			return
 		}
-		for _, v := range db.LogRules {
-			if v.Id == rid {
-				LogRuleEdit(*v).Render(r.Context(), w)
+		for _, rule := range db.LogRules {
+			if rule.Id == rid {
+				matches := findMatchingLogs(db, rule)
+				LogRuleEdit(*rule, matches).Render(r.Context(), w)
 				return
 			}
 		}

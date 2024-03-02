@@ -21,10 +21,9 @@ tool. Currently there are two planned modes:
 
 ## Features
 
-- add visibility for how much each rule is used in the rule editing UI
+- add error messages if log retrieval fails
 
-- add visibility for matching in the rule editing UI (dump matching log
-  rule list in expanded format)
+- add visibility for how much each rule is used in the rule editing UI
 
 - better log list selection features (current non-spam is ok default, but
   also seeing spam, ham only, all might be valid?)
@@ -33,9 +32,6 @@ tool. Currently there are two planned modes:
   filename)
 
 - (fts) search (for logs, rules)
-
-- regexp match in addition to simple = (And convert the op to popup
-  selection instead of text input)
 
 ## Big features
 

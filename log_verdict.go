@@ -13,43 +13,48 @@ const (
 	LogVerdictSpam
 )
 
-func LogVerdict(log *Log, rules []*LogRule) int {
-	verdict := LogVerdictUnknown
-	for _, rule := range rules {
-		if rule.Disabled {
+func logMatchesRule(log *Log, rule *LogRule) bool {
+	if rule.Disabled {
+		return false
+	}
+	for _, matcher := range rule.Matchers {
+		if matcher.Field == "" && matcher.Value == "" {
 			continue
 		}
-		match := true
-		for _, matcher := range rule.Matchers {
-			value, ok := log.Stream[matcher.Field]
+		value, ok := log.Stream[matcher.Field]
+		if !ok {
+			value, ok = log.Fields[matcher.Field].(string)
 			if !ok {
-				value, ok = log.Fields[matcher.Field].(string)
-				if !ok {
-					if matcher.Field == "message" {
-						value = log.Message
-					} else {
-						match = false
-						break
-					}
+				if matcher.Field != "message" {
+					return false
 				}
+				value = log.Message
 			}
-
-			// Only supported op is '='
-			if matcher.Op == "=" {
-				if value == matcher.Value {
-					continue
-				}
-			}
-			match = false
-			break
 		}
-		if match {
-			if rule.Ham {
-				verdict = LogVerdictHam
-			} else {
-				verdict = LogVerdictSpam
-			}
+		if !matcher.Match(value) {
+			return false
 		}
 	}
-	return verdict
+	return true
+
+}
+
+func LogVerdictRule(log *Log, rules []*LogRule) *LogRule {
+	for _, rule := range rules {
+		if logMatchesRule(log, rule) {
+			return rule
+		}
+	}
+	return nil
+}
+
+func LogVerdict(log *Log, rules []*LogRule) int {
+	rule := LogVerdictRule(log, rules)
+	if rule != nil {
+		if rule.Ham {
+			return LogVerdictHam
+		}
+		return LogVerdictSpam
+	}
+	return LogVerdictUnknown
 }

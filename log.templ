@@ -2,6 +2,85 @@ package main
 
 import "strconv"
 
+templ LogListTable(m LogListModel) {
+  <table class="table">
+    <thead>
+      if !m.Config.AutoRefresh && !m.DisableActions {
+        <th scope="col">Op</th>
+      }
+      <th scope="col">Time</th>
+      <th scope="col">Stream</th>
+      <th scope="col">Fields</th>
+      <th scope="col">Message</th>
+    </thead>
+    <tbody>
+      for _, log := range m.Logs {
+        <tr id={log.IdString()}>
+          if !m.Config.AutoRefresh {
+          <td>
+            <div class="btn-group">
+              <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
+              if m.LogVerdict(log) != LogVerdictHam {
+                <a class="btn btn-primary btn-sm" href={logLink(log,
+                   "ham")}>!</a>
+              }
+            </div>
+          </td>
+          }
+          <td>{log.Time.Format("15:04:05.000")}</td>
+          <td>
+            if m.Config.Expand != log.Hash() && !m.DisableActions {
+              source={log.Stream["source"]}
+              <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                +{strconv.Itoa(len(log.StreamKeys)-1)}
+              </a>
+            } else {
+              <a href={m.Config.WithExpand(0).ToLink()}>-</a>
+              for _, k := range log.StreamKeys {
+                {k}={log.Stream[k]}<br/>
+              }
+           }
+           </td>
+          <td>
+            if m.Config.Expand != log.Hash() && !m.DisableActions {
+              <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
+                +{strconv.Itoa(len(log.FieldsKeys))}
+              </a>
+            } else {
+              <a href={m.Config.WithExpand(0).ToLink()}>-</a>
+              for _, k := range log.FieldsKeys {
+                {k}={toJson(log.Fields[k])}<br/>
+              }
+            }
+          </td>
+          <td>
+            if m.LogVerdict(log) == LogVerdictHam {
+              <b>{log.Message}</b>
+            } else if m.LogVerdict(log) == LogVerdictSpam {
+              <em>{log.Message}</em>
+            } else {
+              {log.Message}
+            }
+          </td>
+        </tr>
+        }
+        if len(m.Logs) == m.Limit && !m.Config.AutoRefresh && !m.DisablePagination {
+        <tr>
+          <td colspan="4">
+            <span hx-target="closest tr"
+                  hx-trigger="revealed"
+                  hx-swap="outerHTML"
+                  hx-select="tbody > tr"
+                  hx-get={m.Config.WithBefore(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
+              Loading More...
+            </span>
+          </td>
+        </tr>
+        }
+    </tbody>
+  </table>
+}
+
 templ LogList(m LogListModel) {
   @Base(TopLevelLog, "Log list") {
     @Row("refresh-and-count") {
@@ -20,81 +99,7 @@ templ LogList(m LogListModel) {
     }
     @Row("logs") {
       @Col(12) {
-        <table class="table">
-          <thead>
-            if !m.Config.AutoRefresh {
-              <th scope="col">Op</th>
-            }
-            <th scope="col">Time</th>
-            <th scope="col">Stream</th>
-            <th scope="col">Fields</th>
-            <th scope="col">Message</th>
-          </thead>
-          <tbody>
-            for _, log := range m.Logs {
-              <tr id={log.IdString()}>
-                if !m.Config.AutoRefresh {
-                <td>
-                  <div class="btn-group">
-                    <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
-                    if m.LogVerdict(log) != LogVerdictHam {
-                      <a class="btn btn-primary btn-sm" href={logLink(log,
-                         "ham")}>!</a>
-                    }
-                  </div>
-                </td>
-                }
-                <td>{log.Time.Format("15:04:05.000")}</td>
-                <td>
-                  if m.Config.Expand != log.Hash() {
-                    source={log.Stream["source"]}
-                    <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
-                      +{strconv.Itoa(len(log.StreamKeys)-1)}
-                    </a>
-                  } else {
-                    <a href={m.Config.WithExpand(0).ToLink()}>-</a>
-                    for _, k := range log.StreamKeys {
-                      {k}={log.Stream[k]}<br/>
-                    }
-                 }
-
-                </td>
-                <td>
-                  if m.Config.Expand != log.Hash() {
-                    <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
-                      +{strconv.Itoa(len(log.FieldsKeys))}
-                    </a>
-                  } else {
-                    <a href={m.Config.WithExpand(0).ToLink()}>-</a>
-                    for _, k := range log.FieldsKeys {
-                      {k}={toJson(log.Fields[k])}<br/>
-                    }
-                  }
-                </td>
-                <td>
-                  if m.LogVerdict(log) == LogVerdictHam {
-                    <b>{log.Message}</b>
-                  } else {
-                    {log.Message}
-                  }
-                </td>
-              </tr>
-              }
-              if len(m.Logs) == m.Limit && !m.Config.AutoRefresh {
-              <tr>
-                <td colspan="4">
-                  <span hx-target="closest tr"
-                        hx-trigger="revealed"
-                        hx-swap="outerHTML"
-                        hx-select="tbody > tr"
-                        hx-get={m.Config.WithBefore(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
-                    Loading More...
-                  </span>
-                </td>
-              </tr>
-              }
-          </tbody>
-        </table>
+        @LogListTable(m)
       }
     }
   }
