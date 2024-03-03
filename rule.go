@@ -215,13 +215,6 @@ func logRuleEditSpecificHandler(db *Database) http.Handler {
 	})
 }
 
-func logRuleListHandler(db *Database) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		LogRuleList(db.LogRulesReversed()).Render(r.Context(), w)
-
-	})
-}
-
 func fieldId(id int, suffix string) string {
 	return fmt.Sprintf("row-%d-%s", id, suffix)
 }

@@ -109,7 +109,7 @@ func ruleLink(id int, op string) templ.SafeURL {
 }
 
 
-templ LogRuleList(rules []*LogRule) {
+templ LogRuleList(m LogRuleListModel) {
   @Base(TopLevelRule, "Log rule list") {
     @Row("rule-add") {
       @Col(2) {
@@ -127,8 +127,8 @@ templ LogRuleList(rules []*LogRule) {
             <th scope="col">Actions</th>
           </thead>
           <tbody>
-            for _, rule := range rules {
-              <tr>
+            for _, rule := range m.LogRules {
+              <tr class="logrule">
                 <th scope="row">
                   {strconv.Itoa(rule.Id)}
                 </th>
@@ -158,6 +158,19 @@ templ LogRuleList(rules []*LogRule) {
                   </div>
                 </td>
               </tr>
+            }
+            if m.HasMore {
+            <tr class="logrule">
+              <td colspan="5">
+                <span hx-target="closest tr"
+                      hx-trigger="revealed"
+                      hx-swap="outerHTML"
+                      hx-select="tr.logrule"
+                      hx-get={m.NextLinkString()}>
+                  Loading More...
+                </span>
+              </td>
+            </tr>
             }
           </tbody>
         </table>
