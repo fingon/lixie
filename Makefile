@@ -29,3 +29,7 @@ serve:
 
 %_templ.go: %.templ
 	templ generate -f $<
+
+
+update-sample:
+	wget -r -np -k -l 1 http://localhost:8080/

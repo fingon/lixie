@@ -2,6 +2,12 @@ package main
 
 import "strconv"
 
+templ LogListRuleLink(rule *LogRule) {
+  if rule != nil {
+    <a href={ruleLink(rule.Id, "edit")}>{strconv.Itoa(rule.Id)}</a>
+  }
+}
+
 templ LogListTable(m LogListModel) {
   <table class="table">
     <thead>
@@ -11,6 +17,7 @@ templ LogListTable(m LogListModel) {
       <th scope="col">Time</th>
       <th scope="col">Stream</th>
       <th scope="col">Fields</th>
+      <th scope="col">Rule</th>
       <th scope="col">Message</th>
     </thead>
     <tbody>
@@ -52,6 +59,9 @@ templ LogListTable(m LogListModel) {
                 {k}={toJson(log.Fields[k])}<br/>
               }
             }
+          </td>
+          <td>
+            @LogListRuleLink(m.LogVerdictRule(log))
           </td>
           <td>
             if m.LogVerdict(log) == LogVerdictHam {

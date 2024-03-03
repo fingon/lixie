@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+
+	"github.com/a-h/templ"
 )
 
 type LogFieldMatcher struct {
@@ -228,4 +230,8 @@ func ruleTitle(rule LogRule) string {
 
 func ruleIdString(rule LogRule) string {
 	return fmt.Sprintf("%d", rule.Id)
+}
+
+func ruleLink(id int, op string) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/rule/%d/%s", id, op))
 }

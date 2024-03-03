@@ -109,8 +109,11 @@ type LogListModel struct {
 	TotalCount             int
 }
 
+// TODO: These should be probably cached
+func (self *LogListModel) LogVerdictRule(log *Log) *LogRule {
+	return LogVerdictRule(log, self.LogRules)
+}
 func (self *LogListModel) LogVerdict(log *Log) int {
-	// TODO: These should be probably cached
 	return LogVerdict(log, self.LogRules)
 }
 

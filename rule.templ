@@ -104,11 +104,6 @@ templ LogRuleMatchersTable(rule LogRule) {
 }
 
 
-func ruleLink(id int, op string) templ.SafeURL {
-  return templ.URL(fmt.Sprintf("/rule/%d/%s", id, op))
-}
-
-
 templ LogRuleList(m LogRuleListModel) {
   @Base(TopLevelRule, "Log rule list") {
     @Row("rule-add") {
