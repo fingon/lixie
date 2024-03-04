@@ -16,6 +16,12 @@ templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
       @Col(2) {
         <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
       }
+      if rule.Id > 0 {
+      @Col(6)
+      @Col(2) {
+        <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
+      }
+      }
     }
     @Row("state") {
       @Col(2) {
