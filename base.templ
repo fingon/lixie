@@ -23,9 +23,9 @@ templ Base(toplevel int, title string) {
             for _, info := range topLevelInfos {
               <li class="nav-item">
                 if info.Id == toplevel {
-                  <a class="nav-link active" href={info.URL()}>{info.Title}</a>
+                  <a class="nav-link active" href={templ.URL(info.Path + "/")}>{info.Title}</a>
                 } else {
-                  <a class="nav-link" href={info.URL()}>{info.Title}</a>
+                  <a class="nav-link" href={templ.URL(info.Path + "/")}>{info.Title}</a>
                 }
               </li>
             }

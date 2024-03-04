@@ -30,6 +30,10 @@ serve:
 %_templ.go: %.templ
 	templ generate -f $<
 
-
+# This is unlikely to work for anyone else than me, but..
 update-sample:
+	rm -rf ./localhost:8080
 	wget -r -np -k -l 1 http://localhost:8080/
+	rsync -a --delete \
+		./localhost:8080/ ~/sites/fingon.kapsi.fi/www/lixie/
+	cd ~/sites && ./update.sh
