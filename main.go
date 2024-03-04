@@ -41,8 +41,7 @@ func debugRequest(r *http.Request) {
 // //go:embed all:static
 var embedContent embed.FS
 
-func setupDatabase(config data.DatabaseConfig) *data.Database {
-	path := "db.json"
+func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 	db, err := data.NewDatabaseFromFile(config, path)
 	if err != nil {
 		fmt.Printf("Unable to read %s: %s", path, err.Error())
@@ -71,6 +70,7 @@ func run(
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
 	loki_server := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
 	loki_selector := flags.String("loki-selector", "{forwarder=\"vector\"}", "Selector to use when querying logs from Loki")
+	db_path := flags.String("db", "db.json", "Database to use")
 
 	port := flags.Int("port", 8080, "Port number to listen at")
 	if err := flags.Parse(args[1:]); err != nil {
@@ -85,7 +85,7 @@ func run(
 
 	config := data.DatabaseConfig{LokiServer: *loki_server,
 		LokiSelector: *loki_selector}
-	db := setupDatabase(config)
+	db := setupDatabase(config, *db_path)
 
 	// Configure the routes
 	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

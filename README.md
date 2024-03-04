@@ -52,9 +52,6 @@ recommended as that will include edit-delete-etc link calls.
 
 - add visibility for how much each rule is used in the rule editing UI
 
-- configuration file / CLI for the hardcoded stuff (e.g. Loki URL, database
-  filename)
-
 - (fts) search (for logs, rules)
 
 ## Big features
