@@ -87,10 +87,9 @@ func (self *Database) nextLogRuleId() int {
 func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	logs := []*Log{}
 
-	// TBD don't hardcode endpoint and query
-	base := "http://fw.lan:3100/loki/api/v1/query_range"
+	base := fmt.Sprintf("%s/loki/api/v1/query_range", lokiServer)
 	v := url.Values{}
-	v.Set("query", "{forwarder=\"vector\"}")
+	v.Set("query", lokiSelector)
 	//v.Set("direction", "backward")
 	v.Set("limit", "5000")
 	if start > 0 {
@@ -224,8 +223,7 @@ func (self *Database) Save() {
 	defer f.Close()
 }
 
-func NewDatabaseFromFile(name string) (db *Database, err error) {
-	path := "db.json"
+func NewDatabaseFromFile(path string) (db *Database, err error) {
 	f, err := os.Open(path)
 	data, err := io.ReadAll(f)
 	if err != nil {
@@ -233,6 +231,6 @@ func NewDatabaseFromFile(name string) (db *Database, err error) {
 	}
 	db = &Database{}
 	err = json.Unmarshal(data, db)
-	db.path = name
+	db.path = path
 	return
 }

@@ -37,7 +37,7 @@ templ LogListTable(m LogListModel) {
           <td>{log.Time.Format("15:04:05.000")}</td>
           <td>
             if m.Config.Expand != log.Hash() && !m.DisableActions {
-              source={log.Stream["source"]}
+              {primaryStreamKey}={log.Stream[primaryStreamKey]}
               <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
                 +{strconv.Itoa(len(log.StreamKeys)-1)}
               </a>
