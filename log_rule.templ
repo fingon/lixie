@@ -109,13 +109,13 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
 }
 
 templ LogRuleMatchersTable(rule data.LogRule) {
-  <table class="table">
+  <table class="table table-hover">
     <tbody>
       for _, matcher := range rule.Matchers {
         <tr>
-          <td>{matcher.Field}</td>
-          <td>{matcher.Op}</td>
-          <td>{matcher.Value}</td>
+          <td style="width:10%">{matcher.Field}</td>
+          <td style="width:10em">{matcher.Op}</td>
+          <td><div class="float-end">{matcher.Value}</div></td>
         </tr>
       }
     </tbody>
@@ -124,7 +124,7 @@ templ LogRuleMatchersTable(rule data.LogRule) {
 
 
 templ LogRuleListTable(m LogRuleListModel) {
-  <table class="table">
+  <table class="table table-hover">
     <thead>
       <th scope="col">#</th>
       <th scope="col">State</th>

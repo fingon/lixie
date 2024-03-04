@@ -10,7 +10,7 @@ templ LogListRuleLink(rule *data.LogRule) {
 }
 
 templ LogListTable(m LogListModel) {
-  <table class="table">
+  <table class="table table-hover">
     <thead>
       if !m.Config.AutoRefresh && !m.DisableActions {
         <th scope="col">Op</th>
