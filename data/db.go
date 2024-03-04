@@ -197,9 +197,15 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
 		Op:    "=",
 		Value: log.Message}}}
 	for _, k := range log.StreamKeys {
+		for _, ignored_stream := range ignoredStreamKeys {
+			if ignored_stream == k {
+				goto next
+			}
+		}
 		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Field: k,
 			Op:    "=",
 			Value: log.Stream[k]})
+	next:
 	}
 	self.Add(rule)
 	return true

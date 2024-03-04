@@ -11,7 +11,3 @@ package main
 
 // This is what is shown by default in log list
 const primaryStreamKey = "source"
-
-// When adding rules, these stream keys are NOT included
-// (This doesn't prevent their manual addition)
-var ignoredStreamKeys = []string{"forwarder", "host", "source_source", "source_type"}

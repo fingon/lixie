@@ -30,8 +30,11 @@ func (self *LogRuleListModel) Filter() {
 		last = len(self.LogRules) - 1
 	}
 	rules := make([]*data.LogRule, 0, self.Limit)
-	for _, rule := range self.LogRules[self.Index:last] {
-		rules = append(rules, rule)
+	if last > self.Index {
+		for _, rule := range self.LogRules[self.Index:last] {
+			rules = append(rules, rule)
+
+		}
 	}
 	self.LogRules = rules
 }
