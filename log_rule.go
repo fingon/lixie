@@ -10,65 +10,12 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"slices"
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/fingon/lixie/data"
 )
-
-type LogFieldMatcher struct {
-	Field string
-	Op    string
-	Value string
-
-	match func(string) bool
-}
-
-func (self *LogFieldMatcher) Match(s string) bool {
-	if self.match == nil {
-		if self.Op == "=" {
-			self.match = func(s string) bool {
-				return s == self.Value
-			}
-		}
-		if self.Op == "=~" {
-			re, err := regexp.Compile(fmt.Sprintf("^%s$", self.Value))
-			if err == nil {
-				self.match = func(s string) bool {
-					return re.Match([]byte(s))
-				}
-			}
-		}
-		if self.match == nil {
-			self.match = func(s string) bool {
-				return false
-			}
-		}
-	}
-	return self.match(s)
-}
-
-type LogRule struct {
-	// Id zero is reserved 'not saved'
-	Id int
-
-	// Rule may or may not be disabled
-	Disabled bool
-
-	// Is the result interesting, or not?
-	Ham bool
-
-	// List of matchers the rule matches against
-	Matchers []LogFieldMatcher
-
-	// Comment (if any)
-	Comment string
-
-	// Version of the rule; any time the rule is changed, the
-	// version is incremented
-	Version int
-}
 
 // top-level form fields
 
@@ -89,8 +36,8 @@ const valueField = "v"
 const actionAdd = "a"
 const actionSave = "s"
 
-func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
-	rule := LogRule{}
+func NewLogRuleFromForm(r FormValued) (result *data.LogRule, err error) {
+	rule := data.LogRule{}
 
 	if _, err = intFromForm(r, idKey, &rule.Id); err != nil {
 		return
@@ -116,7 +63,7 @@ func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 		if field == "" && op == "" && value == "" {
 			break
 		}
-		matcher := LogFieldMatcher{Field: field, Op: op, Value: value}
+		matcher := data.LogFieldMatcher{Field: field, Op: op, Value: value}
 		rule.Matchers = append(rule.Matchers, matcher)
 		i += 1
 	}
@@ -126,18 +73,18 @@ func NewLogRuleFromForm(r FormValued) (result *LogRule, err error) {
 		rule.Matchers = slices.Delete(rule.Matchers, delete, delete+1)
 	}
 	if r.FormValue(actionAdd) != "" {
-		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Op: "="})
+		rule.Matchers = append(rule.Matchers, data.LogFieldMatcher{Op: "="})
 	}
 	// Save is dealt with externally
 	result = &rule
 	return
 }
 
-func findMatchingLogs(db *Database, rule *LogRule) *LogListModel {
+func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 	m := LogListModel{
-		Config:                 LogListConfig{Filter: LogVerdictUnknown},
+		Config:                 LogListConfig{Filter: data.LogVerdictUnknown},
 		Logs:                   db.Logs(),
-		LogRules:               []*LogRule{rule},
+		LogRules:               []*data.LogRule{rule},
 		DisableActions:         true,
 		DisablePagination:      true,
 		EnableAccurateCounting: true,
@@ -146,7 +93,7 @@ func findMatchingLogs(db *Database, rule *LogRule) *LogListModel {
 	return &m
 }
 
-func logRuleEditHandler(db *Database) http.Handler {
+func logRuleEditHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		rule, err := NewLogRuleFromForm(r)
@@ -182,7 +129,7 @@ func logRuleEditHandler(db *Database) http.Handler {
 	})
 }
 
-func logRuleDeleteSpecificHandler(db *Database) http.Handler {
+func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rid_string := r.PathValue("id")
 		rid, err := strconv.Atoi(rid_string)
@@ -198,7 +145,7 @@ func logRuleDeleteSpecificHandler(db *Database) http.Handler {
 	})
 }
 
-func logRuleEditSpecificHandler(db *Database) http.Handler {
+func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rid_string := r.PathValue("id")
 		rid, err := strconv.Atoi(rid_string)
@@ -221,14 +168,14 @@ func fieldId(id int, suffix string) string {
 	return fmt.Sprintf("row-%d-%s", id, suffix)
 }
 
-func ruleTitle(rule LogRule) string {
+func ruleTitle(rule data.LogRule) string {
 	if rule.Id > 0 {
 		return fmt.Sprintf("Log rule editor - editing #%d", rule.Id)
 	}
 	return "Log rule creator"
 }
 
-func ruleIdString(rule LogRule) string {
+func ruleIdString(rule data.LogRule) string {
 	return fmt.Sprintf("%d", rule.Id)
 }
 

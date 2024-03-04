@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/fingon/lixie/data"
 )
 
 type LogListConfig struct {
@@ -35,7 +36,7 @@ func NewLogListConfig(r FormValued) LogListConfig {
 	autorefresh := r.FormValue(autoRefreshKey) != ""
 	expand := uint64(0)
 	uint64FromForm(r, expandKey, &expand)
-	filter := LogVerdictSpam
+	filter := data.LogVerdictSpam
 	intFromForm(r, filterKey, &filter)
 	// before is omitted intentionally
 	return LogListConfig{AutoRefresh: autorefresh, Expand: expand, Filter: filter}
@@ -75,7 +76,7 @@ func (self LogListConfig) ToLinkString() string {
 	if self.Expand != 0 {
 		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
 	}
-	if self.Filter != LogVerdictSpam {
+	if self.Filter != data.LogVerdictSpam {
 		v.Set(filterKey, strconv.Itoa(self.Filter))
 	}
 	if len(v) == 0 {
@@ -90,8 +91,8 @@ func (self LogListConfig) ToLink() templ.SafeURL {
 
 type LogListModel struct {
 	Config   LogListConfig
-	Logs     []*Log
-	LogRules []*LogRule
+	Logs     []*data.Log
+	LogRules []*data.LogRule
 
 	ExcludeVerdict int
 
@@ -110,16 +111,16 @@ type LogListModel struct {
 }
 
 // TODO: These should be probably cached
-func (self *LogListModel) LogVerdictRule(log *Log) *LogRule {
-	return LogVerdictRule(log, self.LogRules)
+func (self *LogListModel) LogVerdictRule(log *data.Log) *data.LogRule {
+	return data.LogVerdictRule(log, self.LogRules)
 }
-func (self *LogListModel) LogVerdict(log *Log) int {
-	return LogVerdict(log, self.LogRules)
+func (self *LogListModel) LogVerdict(log *data.Log) int {
+	return data.LogVerdict(log, self.LogRules)
 }
 
 func (self *LogListModel) Filter() {
 	// Some spare capacity but who really cares
-	logs := make([]*Log, 0, self.Limit)
+	logs := make([]*data.Log, 0, self.Limit)
 	active := self.BeforeHash == 0
 	count := 0
 	self.TotalCount = len(self.Logs)
@@ -147,7 +148,7 @@ func (self *LogListModel) Filter() {
 	self.FilteredCount = count
 }
 
-func logListHandler(db *Database) http.Handler {
+func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var before_hash uint64
 		uint64FromForm(r, beforeKey, &before_hash)

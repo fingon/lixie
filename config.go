@@ -15,9 +15,3 @@ const primaryStreamKey = "source"
 // When adding rules, these stream keys are NOT included
 // (This doesn't prevent their manual addition)
 var ignoredStreamKeys = []string{"forwarder", "host", "source_source", "source_type"}
-
-const lokiServer = "http://fw.lan:3100"
-
-// Loki doesn't allow empty selector; configure something which
-// matches logs you want to handle with Lixie
-const lokiSelector = "{forwarder=\"vector\"}"

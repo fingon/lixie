@@ -5,7 +5,7 @@
  *
  */
 
-package main
+package data
 
 type LokiQueryResultDataResult struct {
 	Metric map[string]string `json:"metric"`

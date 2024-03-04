@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Thu Feb 29 20:21:55 2024 mstenber
- * Last modified: Sat Mar  2 09:36:59 2024 mstenber
- * Edit time:     13 min
+ * Last modified: Mon Mar  4 09:27:21 2024 mstenber
+ * Edit time:     14 min
  *
  */
 
@@ -16,10 +16,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/fingon/lixie/data"
 	"gotest.tools/v3/assert"
 )
 
-func logRuleToWrapper(rule *LogRule) URLWrapper {
+func logRuleToWrapper(rule *data.LogRule) URLWrapper {
 	w := URLWrapper{}
 	// TODO: Manually populate corresponding values
 	// (normally browser does it so we don't have corresponding 'prod' code)
@@ -44,11 +45,11 @@ func logRuleToWrapper(rule *LogRule) URLWrapper {
 }
 
 func TestLogRuleEndecode(t *testing.T) {
-	rule := LogRule{
+	rule := data.LogRule{
 		Id:       42,
 		Disabled: true,
 		Ham:      true,
-		Matchers: []LogFieldMatcher{{Field: "key",
+		Matchers: []data.LogFieldMatcher{{Field: "key",
 			Op:    "=",
 			Value: "value"}},
 		Comment: "a comment",

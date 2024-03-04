@@ -5,14 +5,14 @@
  *
  */
 
-package main
+package data
 
 import (
 	"cmp"
 	"slices"
 )
 
-func sortedKeysWithFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) []K {
+func SortedKeysWithFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) []K {
 	result := make([]K, 0, len(m))
 	for k := range m {
 		result = append(result, k)
@@ -21,6 +21,6 @@ func sortedKeysWithFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) []
 	return result
 }
 
-func sortedKeys[K cmp.Ordered, V any](m map[string]V) []string {
-	return sortedKeysWithFunc(m, cmp.Compare)
+func SortedKeys[K cmp.Ordered, V any](m map[string]V) []string {
+	return SortedKeysWithFunc(m, cmp.Compare)
 }

@@ -10,7 +10,7 @@ GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
 
 build: $(BINARY)
 
-$(BINARY): $(wildcard *.go) $(GENERATED)
+$(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED)
 	go build .
 	go test
 

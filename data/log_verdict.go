@@ -5,7 +5,7 @@
  *
  */
 
-package main
+package data
 
 const (
 	LogVerdictUnknown int = iota
@@ -15,7 +15,7 @@ const (
 	NumLogVerdicts
 )
 
-func logVerdictToString(verdict int) string {
+func LogVerdictToString(verdict int) string {
 	switch verdict {
 	case LogVerdictHam:
 		return "Ham"

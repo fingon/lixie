@@ -5,7 +5,7 @@
  *
  */
 
-package main
+package data
 
 import (
 	"testing"

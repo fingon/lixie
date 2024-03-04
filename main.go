@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/a-h/templ"
+	"github.com/fingon/lixie/data"
 )
 
 func debugRequest(r *http.Request) {
@@ -40,39 +41,11 @@ func debugRequest(r *http.Request) {
 // //go:embed all:static
 var embedContent embed.FS
 
-func setupSampleDatabase(path string) *Database {
-	db := &Database{path: path}
-	// These are highly spammy and at least Loki 2.9.3 bugs this
-	// way consistently
-	db.Add(LogRule{Matchers: []LogFieldMatcher{
-		{Field: "source",
-			Op:    "=",
-			Value: "loki"},
-		{Field: "message",
-			Op:    "=",
-			Value: "error notifying scheduler about finished query"},
-		{Field: "err",
-			Op:    "=",
-			Value: "EOF"}}})
-	db.Add(LogRule{Matchers: []LogFieldMatcher{
-		{Field: "source",
-			Op:    "=",
-			Value: "loki"},
-		{Field: "message",
-			Op:    "=",
-			Value: "error processing requests from scheduler"},
-		{Field: "err",
-			Op:    "=",
-			Value: "rpc error: code = Canceled desc = context canceled"}}})
-	return db
-}
-
-func setupDatabase() *Database {
+func setupDatabase(config data.DatabaseConfig) *data.Database {
 	path := "db.json"
-	db, err := NewDatabaseFromFile(path)
+	db, err := data.NewDatabaseFromFile(config, path)
 	if err != nil {
-		fmt.Printf("Unable to read %s: %s - setting up sample instead", path, err.Error())
-		return setupSampleDatabase("sample-db.json")
+		fmt.Printf("Unable to read %s: %s", path, err.Error())
 	}
 	return db
 }
@@ -96,6 +69,9 @@ func run(
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
+	loki_server := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
+	loki_selector := flags.String("loki-selector", "{forwarder=\"vector\"}", "Selector to use when querying logs from Loki")
+
 	port := flags.Int("port", 8080, "Port number to listen at")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
@@ -107,7 +83,9 @@ func run(
 		log.Panic(err)
 	}
 
-	db := setupDatabase()
+	config := data.DatabaseConfig{LokiServer: *loki_server,
+		LokiSelector: *loki_selector}
+	db := setupDatabase(config)
 
 	// Configure the routes
 	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

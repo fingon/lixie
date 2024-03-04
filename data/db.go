@@ -5,7 +5,7 @@
  *
  */
 
-package main
+package data
 
 import (
 	"bytes"
@@ -22,7 +22,14 @@ import (
 	"sync"
 )
 
+type DatabaseConfig struct {
+	LokiServer   string
+	LokiSelector string
+}
+
 type Database struct {
+	config DatabaseConfig
+
 	// TODO: There should be really locking here too;
 	// log fetching is probably the more common thing though
 	LogRules []*LogRule
@@ -87,9 +94,9 @@ func (self *Database) nextLogRuleId() int {
 func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	logs := []*Log{}
 
-	base := fmt.Sprintf("%s/loki/api/v1/query_range", lokiServer)
+	base := fmt.Sprintf("%s/loki/api/v1/query_range", self.config.LokiServer)
 	v := url.Values{}
-	v.Set("query", lokiSelector)
+	v.Set("query", self.config.LokiSelector)
 	//v.Set("direction", "backward")
 	v.Set("limit", "5000")
 	if start > 0 {
@@ -223,14 +230,12 @@ func (self *Database) Save() {
 	defer f.Close()
 }
 
-func NewDatabaseFromFile(path string) (db *Database, err error) {
+func NewDatabaseFromFile(config DatabaseConfig, path string) (db *Database, err error) {
+	db = &Database{config: config, path: path}
 	f, err := os.Open(path)
 	data, err := io.ReadAll(f)
-	if err != nil {
-		return
+	if err == nil {
+		err = json.Unmarshal(data, db)
 	}
-	db = &Database{}
-	err = json.Unmarshal(data, db)
-	db.path = path
 	return
 }

@@ -1,8 +1,9 @@
 package main
 
+import "github.com/fingon/lixie/data"
 import "strconv"
 
-templ LogListRuleLink(rule *LogRule) {
+templ LogListRuleLink(rule *data.LogRule) {
   if rule != nil {
     <a href={ruleLink(rule.Id, "edit")}>{strconv.Itoa(rule.Id)}</a>
   }
@@ -27,7 +28,7 @@ templ LogListTable(m LogListModel) {
           <td>
             <div class="btn-group">
               <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
-              if m.LogVerdict(log) != LogVerdictHam {
+              if m.LogVerdict(log) != data.LogVerdictHam {
                 <a class="btn btn-primary btn-sm" href={logLink(log,
                    "ham")}>!</a>
               }
@@ -64,9 +65,9 @@ templ LogListTable(m LogListModel) {
             @LogListRuleLink(m.LogVerdictRule(log))
           </td>
           <td>
-            if m.LogVerdict(log) == LogVerdictHam {
+            if m.LogVerdict(log) == data.LogVerdictHam {
               <b>{log.Message}</b>
-            } else if m.LogVerdict(log) == LogVerdictSpam {
+            } else if m.LogVerdict(log) == data.LogVerdictSpam {
               <em>{log.Message}</em>
             } else {
               {log.Message}
@@ -108,14 +109,14 @@ templ LogList(m LogListModel) {
       }
       @Col(6) {
         <ul class="nav nav-pills">
-          for verdict := range NumLogVerdicts {
+          for verdict := range data.NumLogVerdicts {
             <li class="nav-item">
               if m.Config.Filter == verdict {
                 <a class="nav-link active bg-success-subtle" href={m.Config.ToLink()}>
-                  {logVerdictToString(verdict)} filtered</a>
+                  {data.LogVerdictToString(verdict)} filtered</a>
               } else {
                 <a class="nav-link" href={m.Config.WithFilter(verdict).ToLink()}>
-                  Filter {logVerdictToString(verdict)}</a>
+                  Filter {data.LogVerdictToString(verdict)}</a>
               }
             </li>
           }

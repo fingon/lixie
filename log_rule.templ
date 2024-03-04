@@ -1,9 +1,10 @@
 package main
 
+import "github.com/fingon/lixie/data"
 import "fmt"
 import "strconv"
 
-templ LogRuleEdit(rule LogRule, matches *LogListModel) {
+templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
   @Base(TopLevelRule, ruleTitle(rule)) {
   <form action="/rule/edit">
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
@@ -89,7 +90,7 @@ templ LogRuleEdit(rule LogRule, matches *LogListModel) {
   }
 }
 
-templ LogRuleMatchersTable(rule LogRule) {
+templ LogRuleMatchersTable(rule data.LogRule) {
   <table class="table">
     <tbody>
       for _, matcher := range rule.Matchers {
