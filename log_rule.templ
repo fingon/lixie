@@ -4,7 +4,7 @@ import "github.com/fingon/lixie/data"
 import "fmt"
 import "strconv"
 
-templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
+templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
   @Base(TopLevelLogRule, ruleTitle(rule)) {
   <form action={logRuleEdit.URL()}>
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
@@ -79,14 +79,26 @@ templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
       }
     }
   </form>
-  if matches != nil {
+  if rules != nil {
+    <br />
+    @Row("overlapping-rules") {
+      @Col(12) {
+          if len(rules.LogRules) > 0 {
+            <h4>{strconv.Itoa(len(rules.LogRules))} conflicting rules:</h4>
+            @LogRuleListTable(*rules)
+        }
+      }
+    }
+  }
+  if logs != nil {
+    <br />
     @Row("logs") {
       @Col(12) {
-        if len(matches.Logs) > 0 {
-          <p>{strconv.Itoa(matches.FilteredCount)} matching logs out of
-            {strconv.Itoa(matches.TotalCount)}
-          </p>
-          @LogListTable(*matches)
+        if len(logs.Logs) > 0 {
+          <h4>{strconv.Itoa(logs.FilteredCount)} matching logs out of
+            {strconv.Itoa(logs.TotalCount)}:
+          </h4>
+          @LogListTable(*logs)
         } else {
           No matching logs.
         }
@@ -111,6 +123,73 @@ templ LogRuleMatchersTable(rule data.LogRule) {
 }
 
 
+templ LogRuleListTable(m LogRuleListModel) {
+  <table class="table">
+    <thead>
+      <th scope="col">#</th>
+      <th scope="col">State</th>
+      if m.DB != nil {
+      <th scope="col">Matches</th>
+      }
+      <th scope="col">Matchers</th>
+      <th scope="col">Comment</th>
+      <th scope="col">Actions</th>
+    </thead>
+    <tbody>
+      for _, rule := range m.LogRules {
+        <tr class="logrule">
+          <th scope="row">
+            {strconv.Itoa(rule.Id)}
+          </th>
+          <td scope="row">
+            v{strconv.Itoa(rule.Version)}
+            if rule.Disabled {
+              Disabled
+            } else {
+              Enabled
+            }
+            if rule.Ham {
+              Ham
+            } else {
+              Spam
+            }
+          </td>
+          if m.DB != nil {
+          <td>
+            {strconv.Itoa(m.DB.RuleCount(rule.Id))}
+          </td>
+          }
+          <td class="table-primary">
+            @LogRuleMatchersTable(*rule)
+          </td>
+          <td>
+            {rule.Comment}
+          </td>
+          <td class="table-secondary">
+            <div class="position-relative">
+              <a class="btn btn-primary" href={ruleLink(rule.Id, "edit")}>Edit</a>
+              <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
+            </div>
+          </td>
+        </tr>
+      }
+      if m.HasMore {
+      <tr class="logrule">
+        <td colspan="5">
+          <span hx-target="closest tr"
+                hx-trigger="revealed"
+                hx-swap="outerHTML"
+                hx-select="tr.logrule"
+                hx-get={m.NextLinkString()}>
+            Loading More...
+          </span>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+}
+
 templ LogRuleList(m LogRuleListModel) {
   @Base(TopLevelLogRule, "Log rule list") {
     @Row("rule-add") {
@@ -120,66 +199,7 @@ templ LogRuleList(m LogRuleListModel) {
     }
     @Row("rules") {
       @Col(12) {
-        <table class="table">
-          <thead>
-            <th scope="col">#</th>
-            <th scope="col">State</th>
-            <th scope="col">Matches</th>
-            <th scope="col">Matchers</th>
-            <th scope="col">Comment</th>
-            <th scope="col">Actions</th>
-          </thead>
-          <tbody>
-            for _, rule := range m.LogRules {
-              <tr class="logrule">
-                <th scope="row">
-                  {strconv.Itoa(rule.Id)}
-                </th>
-                <td scope="row">
-                  v{strconv.Itoa(rule.Version)}
-                  if rule.Disabled {
-                    Disabled
-                  } else {
-                    Enabled
-                  }
-                  if rule.Ham {
-                    Ham
-                  } else {
-                    Spam
-                  }
-                </td>
-                <td>
-                  {strconv.Itoa(m.DB.RuleCount(rule.Id))}
-                </td>
-                <td class="table-primary">
-                  @LogRuleMatchersTable(*rule)
-                </td>
-                <td>
-                  {rule.Comment}
-                </td>
-                <td class="table-secondary">
-                  <div class="position-relative">
-                    <a class="btn btn-primary" href={ruleLink(rule.Id, "edit")}>Edit</a>
-                    <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
-                  </div>
-                </td>
-              </tr>
-            }
-            if m.HasMore {
-            <tr class="logrule">
-              <td colspan="5">
-                <span hx-target="closest tr"
-                      hx-trigger="revealed"
-                      hx-swap="outerHTML"
-                      hx-select="tr.logrule"
-                      hx-get={m.NextLinkString()}>
-                  Loading More...
-                </span>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+        @LogRuleListTable(m)
       }
     }
   }

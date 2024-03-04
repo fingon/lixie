@@ -93,6 +93,29 @@ func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 	return &m
 }
 
+func findMatchingOtherRules(db *data.Database, logs []*data.Log, skip_rule *data.LogRule) *LogRuleListModel {
+	// We could also check for strict supersets (but regexp+regexp
+	// matching is tricky). So we just show rules that out of the
+	// box seem to overlap as they match the same rules.
+	rules := []*data.LogRule{}
+
+	for _, rule := range db.LogRules {
+		if rule == skip_rule {
+			continue
+		}
+		for _, log := range logs {
+			if data.LogMatchesRule(log, rule) {
+				rules = append(rules, rule)
+				break
+			}
+		}
+	}
+	if len(rules) > 0 {
+		return &LogRuleListModel{LogRules: rules}
+	}
+	return nil
+}
+
 func logRuleEditHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -124,8 +147,9 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 			http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 			return
 		}
-		matches := findMatchingLogs(db, rule)
-		LogRuleEdit(*rule, matches).Render(r.Context(), w)
+		logs := findMatchingLogs(db, rule)
+		rules := findMatchingOtherRules(db, logs.Logs, rule)
+		LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
 	})
 }
 
@@ -155,8 +179,9 @@ func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 		}
 		for _, rule := range db.LogRules {
 			if rule.Id == rid {
-				matches := findMatchingLogs(db, rule)
-				LogRuleEdit(*rule, matches).Render(r.Context(), w)
+				logs := findMatchingLogs(db, rule)
+				rules := findMatchingOtherRules(db, logs.Logs, rule)
+				LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
 				return
 			}
 		}

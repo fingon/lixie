@@ -27,7 +27,7 @@ func LogVerdictToString(verdict int) string {
 	return "Unknown"
 }
 
-func logMatchesRule(log *Log, rule *LogRule) bool {
+func LogMatchesRule(log *Log, rule *LogRule) bool {
 	if rule.Disabled {
 		return false
 	}
@@ -55,7 +55,7 @@ func logMatchesRule(log *Log, rule *LogRule) bool {
 
 func LogToRule(log *Log, rules []*LogRule) *LogRule {
 	for _, rule := range rules {
-		if logMatchesRule(log, rule) {
+		if LogMatchesRule(log, rule) {
 			return rule
 		}
 	}
