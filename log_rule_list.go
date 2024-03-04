@@ -15,6 +15,10 @@ import (
 )
 
 type LogRuleListModel struct {
+	DB *data.Database
+
+	// This is the list actually rendered to the client in this
+	// request; subset of DB rules
 	LogRules []*data.LogRule
 
 	// Paging support
@@ -45,16 +49,16 @@ func (self *LogRuleListModel) NextLinkString() string {
 
 const indexKey = "i"
 
-func NewLogRuleListModel(r *http.Request, rules []*data.LogRule) *LogRuleListModel {
-	m := LogRuleListModel{LogRules: rules, Limit: 10}
+func NewLogRuleListModel(r *http.Request, db *data.Database) *LogRuleListModel {
+	rules := db.LogRulesReversed()
+	m := LogRuleListModel{DB: db, LogRules: rules, Limit: 10}
 	intFromForm(r, indexKey, &m.Index)
 	return &m
 }
 
 func logRuleListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rules := db.LogRulesReversed()
-		m := NewLogRuleListModel(r, rules)
+		m := NewLogRuleListModel(r, db)
 		m.Filter()
 		LogRuleList(*m).Render(r.Context(), w)
 	})

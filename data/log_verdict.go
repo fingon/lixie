@@ -53,7 +53,7 @@ func logMatchesRule(log *Log, rule *LogRule) bool {
 
 }
 
-func LogVerdictRule(log *Log, rules []*LogRule) *LogRule {
+func LogToRule(log *Log, rules []*LogRule) *LogRule {
 	for _, rule := range rules {
 		if logMatchesRule(log, rule) {
 			return rule
@@ -62,8 +62,7 @@ func LogVerdictRule(log *Log, rules []*LogRule) *LogRule {
 	return nil
 }
 
-func LogVerdict(log *Log, rules []*LogRule) int {
-	rule := LogVerdictRule(log, rules)
+func LogRuleToVerdict(rule *LogRule) int {
 	if rule != nil {
 		if rule.Ham {
 			return LogVerdictHam
@@ -71,4 +70,9 @@ func LogVerdict(log *Log, rules []*LogRule) int {
 		return LogVerdictSpam
 	}
 	return LogVerdictUnknown
+}
+
+func LogVerdict(log *Log, rules []*LogRule) int {
+	rule := LogToRule(log, rules)
+	return LogRuleToVerdict(rule)
 }

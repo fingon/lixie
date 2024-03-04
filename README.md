@@ -50,8 +50,6 @@ recommended as that will include edit-delete-etc link calls.
 
 - add error messages if log retrieval fails
 
-- add visibility for how much each rule is used in the rule editing UI
-
 - (fts) search (for logs, rules)
 
 ## Big features

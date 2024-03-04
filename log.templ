@@ -63,7 +63,7 @@ templ LogListTable(m LogListModel) {
             }
           </td>
           <td>
-            @LogListRuleLink(m.LogVerdictRule(log))
+            @LogListRuleLink(m.LogToRule(log))
           </td>
           <td>
             if m.LogVerdict(log) == data.LogVerdictHam {

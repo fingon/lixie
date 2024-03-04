@@ -83,7 +83,7 @@ func NewLogRuleFromForm(r FormValued) (result *data.LogRule, err error) {
 func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 	m := LogListModel{
 		Config:                 LogListConfig{Filter: data.LogVerdictUnknown},
-		Logs:                   db.Logs(),
+		DB:                     db,
 		LogRules:               []*data.LogRule{rule},
 		DisableActions:         true,
 		DisablePagination:      true,
@@ -179,6 +179,10 @@ func ruleIdString(rule data.LogRule) string {
 	return fmt.Sprintf("%d", rule.Id)
 }
 
+func ruleLinkString(id int, op string) string {
+	return fmt.Sprintf("%s/%d/%s", topLevelLogRule.Path, id, op)
+}
+
 func ruleLink(id int, op string) templ.SafeURL {
-	return templ.URL(fmt.Sprintf("%s/%d/%s", topLevelLogRule.Path, id, op))
+	return templ.URL(ruleLinkString(id, op))
 }

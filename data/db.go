@@ -32,7 +32,9 @@ type Database struct {
 
 	// TODO: There should be really locking here too;
 	// log fetching is probably the more common thing though
-	LogRules []*LogRule
+	LogRules     []*LogRule
+	rulesVersion int
+	rid2Count    map[int]int
 
 	// Internal caching of reversed log rules (that are shown to the user)
 	logRulesReversed []*LogRule
@@ -153,10 +155,7 @@ func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	return logs, nil
 }
 
-func (self *Database) Logs() []*Log {
-	self.logLock.Lock()
-	defer self.logLock.Unlock()
-
+func (self *Database) updateLogsWithLock() {
 	start := int64(0)
 	if len(self.logs) > 0 {
 		// TODO would be better to get same timestamp + eliminate if it is same entry
@@ -165,7 +164,6 @@ func (self *Database) Logs() []*Log {
 	logs, err := self.retrieveLogs(start)
 	if err != nil {
 		fmt.Printf("Error retrieving logs from Loki: %s\n", err.Error())
-		return self.logs
 	}
 	for i, log := range logs {
 		if log.Timestamp <= start {
@@ -174,6 +172,12 @@ func (self *Database) Logs() []*Log {
 		}
 	}
 	self.logs = append(logs, self.logs...)
+}
+
+func (self *Database) Logs() []*Log {
+	self.logLock.Lock()
+	defer self.logLock.Unlock()
+	self.updateLogsWithLock()
 	return self.logs
 }
 
@@ -213,6 +217,8 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
 
 func (self *Database) Save() {
 	self.logRulesReversed = nil
+	self.rulesVersion++
+	self.rid2Count = nil
 
 	b, err := json.Marshal(self)
 	if err != nil {
@@ -236,8 +242,38 @@ func (self *Database) Save() {
 	defer f.Close()
 }
 
+func (self *Database) LogToRule(log *Log) *LogRule {
+	// TODO: Does the locking here matter?
+	return log.ToRule(self.rulesVersion, self.LogRulesReversed())
+}
+
+func (self *Database) RuleCount(rid int) int {
+	self.logLock.Lock()
+	defer self.logLock.Unlock()
+
+	// Trigger logs refresh only if we have nothing in cache
+	if self.logs == nil {
+		self.updateLogsWithLock()
+	}
+
+	if self.rid2Count == nil {
+		r2c := make(map[int]int)
+		for _, rule := range self.LogRules {
+			count := 0
+			for _, log := range self.logs {
+				if self.LogToRule(log) == rule {
+					count++
+				}
+			}
+			r2c[rule.Id] = count
+		}
+		self.rid2Count = r2c
+	}
+	return self.rid2Count[rid]
+}
+
 func NewDatabaseFromFile(config DatabaseConfig, path string) (db *Database, err error) {
-	db = &Database{config: config, path: path}
+	db = &Database{config: config, path: path, rulesVersion: 1}
 	f, err := os.Open(path)
 	data, err := io.ReadAll(f)
 	if err == nil {

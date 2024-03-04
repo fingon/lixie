@@ -27,6 +27,10 @@ type Log struct {
 
 	// Cache the xxhash of rawMessage
 	hash *uint64
+
+	// Given ruleset version, the matching log rule (if any)
+	rulesVersion int
+	rule         *LogRule
 }
 
 func (self *Log) Hash() uint64 {
@@ -39,6 +43,14 @@ func (self *Log) Hash() uint64 {
 
 func (self *Log) IdString() string {
 	return "log-" + strconv.FormatUint(self.Hash(), 10)
+}
+
+func (self *Log) ToRule(rules_version int, rules []*LogRule) *LogRule {
+	if self.rulesVersion != rules_version {
+		self.rule = LogToRule(self, rules)
+		self.rulesVersion = rules_version
+	}
+	return self.rule
 }
 
 func NewLog(timestamp int64, stream map[string]string, data string) *Log {

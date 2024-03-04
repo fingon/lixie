@@ -88,10 +88,17 @@ func (self LogListConfig) ToLink() templ.SafeURL {
 }
 
 type LogListModel struct {
-	Config   LogListConfig
-	Logs     []*data.Log
+	Config LogListConfig
+
+	DB *data.Database
+
+	// This is subset of the database actually shown to the user
+	Logs []*data.Log
+
+	// This can be used if specifying custom set of rules, it defaults to DB.LogRules
 	LogRules []*data.LogRule
 
+	// Filtering criteria
 	ExcludeVerdict int
 
 	// Actions
@@ -108,12 +115,15 @@ type LogListModel struct {
 	TotalCount             int
 }
 
-// TODO: These should be probably cached
-func (self *LogListModel) LogVerdictRule(log *data.Log) *data.LogRule {
-	return data.LogVerdictRule(log, self.LogRules)
+func (self *LogListModel) LogToRule(log *data.Log) *data.LogRule {
+	if self.LogRules != nil {
+		return data.LogToRule(log, self.LogRules)
+	}
+	return self.DB.LogToRule(log)
 }
 func (self *LogListModel) LogVerdict(log *data.Log) int {
-	return data.LogVerdict(log, self.LogRules)
+	rule := self.LogToRule(log)
+	return data.LogRuleToVerdict(rule)
 }
 
 func (self *LogListModel) Filter() {
@@ -121,8 +131,9 @@ func (self *LogListModel) Filter() {
 	logs := make([]*data.Log, 0, self.Limit)
 	active := self.BeforeHash == 0
 	count := 0
-	self.TotalCount = len(self.Logs)
-	for _, log := range self.Logs {
+	all_logs := self.DB.Logs()
+	self.TotalCount = len(all_logs)
+	for _, log := range all_logs {
 		if !active {
 			if log.Hash() == self.BeforeHash {
 				active = true
@@ -150,12 +161,10 @@ func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var before_hash uint64
 		uint64FromForm(r, beforeKey, &before_hash)
-		logs := db.Logs()
 		model := LogListModel{Config: NewLogListConfig(r),
 			BeforeHash: before_hash,
 			Limit:      20,
-			Logs:       logs,
-			LogRules:   db.LogRulesReversed()}
+			DB:         db}
 		model.Filter()
 		LogList(model).Render(r.Context(), w)
 	})

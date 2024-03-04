@@ -118,6 +118,7 @@ templ LogRuleList(m LogRuleListModel) {
           <thead>
             <th scope="col">#</th>
             <th scope="col">State</th>
+            <th scope="col">Matches</th>
             <th scope="col">Matchers</th>
             <th scope="col">Comment</th>
             <th scope="col">Actions</th>
@@ -140,6 +141,9 @@ templ LogRuleList(m LogRuleListModel) {
                   } else {
                     Spam
                   }
+                </td>
+                <td>
+                  {strconv.Itoa(m.DB.RuleCount(rule.Id))}
                 </td>
                 <td class="table-primary">
                   @LogRuleMatchersTable(*rule)
