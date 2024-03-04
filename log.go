@@ -18,7 +18,7 @@ import (
 )
 
 func logLink(log *data.Log, op string) templ.SafeURL {
-	return templ.URL(fmt.Sprintf("/log/%d/%s", log.Hash(), op))
+	return templ.URL(topLevelLog.Path + fmt.Sprintf("/%d/%s", log.Hash(), op))
 }
 
 func toJson(v interface{}) string {
@@ -38,7 +38,7 @@ func logClassifyHandler(db *data.Database, ham bool) http.Handler {
 			return
 		}
 		if db.ClassifyHash(hash, ham) {
-			http.Redirect(w, r, "/log/", http.StatusSeeOther)
+			http.Redirect(w, r, topLevelLog.Path, http.StatusSeeOther)
 			return
 		}
 		http.NotFound(w, r)

@@ -95,14 +95,16 @@ func run(
 	http.HandleFunc("/", http.NotFound)
 	main_handler := templ.Handler(MainPage())
 	http.Handle("/{$}", main_handler)
-	http.Handle("/index.html", main_handler)
-	http.Handle("/log/{$}", logListHandler(db))
-	http.Handle("/log/{hash}/ham", logClassifyHandler(db, true))
-	http.Handle("/log/{hash}/spam", logClassifyHandler(db, false))
-	http.Handle("/rule/{$}", logRuleListHandler(db))
-	http.Handle("/rule/edit", logRuleEditHandler(db))
-	http.Handle("/rule/{id}/delete", logRuleDeleteSpecificHandler(db))
-	http.Handle("/rule/{id}/edit", logRuleEditSpecificHandler(db))
+
+	http.Handle(topLevelLog.PathMatcher(), logListHandler(db))
+	http.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(db, true))
+	http.Handle(topLevelLog.Path+"/{hash}/spam", logClassifyHandler(db, false))
+
+	http.Handle(topLevelLogRule.PathMatcher(), logRuleListHandler(db))
+	http.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(db))
+	http.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
+	http.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
+
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static_fs))))
 
 	// Start the actual server

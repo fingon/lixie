@@ -5,8 +5,8 @@ import "fmt"
 import "strconv"
 
 templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
-  @Base(TopLevelRule, ruleTitle(rule)) {
-  <form action="/rule/edit">
+  @Base(TopLevelLogRule, ruleTitle(rule)) {
+  <form action={logRuleEdit.URL()}>
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
     <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
     @Row("add-new") {
@@ -43,7 +43,7 @@ templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
         @Col(2) {
           <input class="form-text" type="text" name={fieldId(i, fieldField)}
                  hx-trigger="change, keyup delay:200ms changed"
-                 hx-post="/rule/edit"
+                 hx-post={logRuleEdit.Path}
                  hx-select="#logs"
                  hx-swap="outerHTML"
                  hx-target="#logs"
@@ -51,7 +51,7 @@ templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
         }
         @Col(1) {
           <select name={fieldId(i, opField)}
-                  hx-post="/rule/edit"
+                  hx-post={logRuleEdit.Path}
                   hx-select="#logs"
                   hx-swap="outerHTML"
                   hx-target="#logs"
@@ -64,7 +64,7 @@ templ LogRuleEdit(rule data.LogRule, matches *LogListModel) {
         @Col(8) {
           <input class="form-text" type="text" name={fieldId(i, valueField)}
                  hx-trigger="change, keyup delay:200ms changed"
-                 hx-post="/rule/edit"
+                 hx-post={logRuleEdit.Path}
                  hx-select="#logs"
                  hx-swap="outerHTML"
                  hx-target="#logs"
@@ -106,10 +106,10 @@ templ LogRuleMatchersTable(rule data.LogRule) {
 
 
 templ LogRuleList(m LogRuleListModel) {
-  @Base(TopLevelRule, "Log rule list") {
+  @Base(TopLevelLogRule, "Log rule list") {
     @Row("rule-add") {
       @Col(2) {
-        <a class="btn btn-secondary" href="/rule/edit">Add rule</a>
+        <a class="btn btn-secondary" href={logRuleEdit.URL()}>Add rule</a>
       }
     }
     @Row("rules") {

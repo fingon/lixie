@@ -37,7 +37,7 @@ func (self *LogRuleListModel) Filter() {
 }
 
 func (self *LogRuleListModel) NextLinkString() string {
-	return fmt.Sprintf("/rule/?%s=%d", indexKey, self.Index+self.Limit)
+	return topLevelLogRule.Path + fmt.Sprintf("/?%s=%d", indexKey, self.Index+self.Limit)
 }
 
 const indexKey = "i"
@@ -54,6 +54,5 @@ func logRuleListHandler(db *data.Database) http.Handler {
 		m := NewLogRuleListModel(r, rules)
 		m.Filter()
 		LogRuleList(*m).Render(r.Context(), w)
-
 	})
 }

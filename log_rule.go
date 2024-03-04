@@ -113,7 +113,7 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 					} else {
 						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
 					}
-					http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+					http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 					return
 				}
 			}
@@ -121,7 +121,7 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 			// Not found. Add new one.
 			fmt.Printf("Adding new rule\n")
 			db.Add(*rule)
-			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+			http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 			return
 		}
 		matches := findMatchingLogs(db, rule)
@@ -138,7 +138,7 @@ func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 			return
 		}
 		if db.Delete(rid) {
-			http.Redirect(w, r, "/rule/", http.StatusSeeOther)
+			http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 			return
 		}
 		http.NotFound(w, r)
@@ -180,5 +180,5 @@ func ruleIdString(rule data.LogRule) string {
 }
 
 func ruleLink(id int, op string) templ.SafeURL {
-	return templ.URL(fmt.Sprintf("/rule/%d/%s", id, op))
+	return templ.URL(fmt.Sprintf("%s/%d/%s", topLevelLogRule.Path, id, op))
 }

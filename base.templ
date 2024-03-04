@@ -2,24 +2,6 @@ package main
 
 import "fmt"
 
-const (
-  TopLevelMain int = iota
-  TopLevelLog
-  TopLevelRule
-)
-
-type TopLevelInfo struct {
-  Id int
-  Href templ.SafeURL
-  Title string
-}
-
-var topLevelInfos = []TopLevelInfo{
-  {TopLevelLog, templ.URL("/log/"), "Logs"},
-  {TopLevelRule, templ.URL("/rule/"), "Rules"},
-}
-
-
 templ Base(toplevel int, title string) {
   <!DOCTYPE html>
   <html lang="en">
@@ -42,9 +24,9 @@ templ Base(toplevel int, title string) {
             for _, info := range topLevelInfos {
               <li class="nav-item">
                 if info.Id == toplevel {
-                  <a class="nav-link active" href={info.Href}>{info.Title}</a>
+                  <a class="nav-link active" href={info.URL()}>{info.Title}</a>
                 } else {
-                  <a class="nav-link" href={info.Href}>{info.Title}</a>
+                  <a class="nav-link" href={info.URL()}>{info.Title}</a>
                 }
               </li>
             }

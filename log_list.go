@@ -26,7 +26,6 @@ type LogListConfig struct {
 	Before uint64
 }
 
-const logListBase = "/log/"
 const autoRefreshKey = "ar"
 const expandKey = "exp"
 const beforeKey = "b"
@@ -63,8 +62,7 @@ func (self LogListConfig) WithFilter(v int) LogListConfig {
 }
 
 func (self LogListConfig) ToLinkString() string {
-	// TODO should this be constant or parameter?
-	base := logListBase
+	base := topLevelLog.Path
 	v := url.Values{}
 	// TODO: Better diffs-from-default handling
 	if self.AutoRefresh {

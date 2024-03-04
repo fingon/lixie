@@ -27,10 +27,11 @@ templ LogListTable(m LogListModel) {
           if !m.Config.AutoRefresh {
           <td>
             <div class="btn-group">
-              <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
+              if m.LogVerdict(log) != data.LogVerdictSpam {
+                <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
+              }
               if m.LogVerdict(log) != data.LogVerdictHam {
-                <a class="btn btn-primary btn-sm" href={logLink(log,
-                   "ham")}>!</a>
+                <a class="btn btn-primary btn-sm" href={logLink(log, "ham")}>!</a>
               }
             </div>
           </td>
