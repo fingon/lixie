@@ -14,12 +14,12 @@ templ Base(toplevel int, title string) {
     </head>
     <body hx-boost="true">
       <div class="container-fluid" id="container">
-        <div class="row bg-success-subtle" id="top" style="padding-left:0;padding-right:0">
+        <div class="row bg-success-subtle position-relative" id="top" style="padding-left:0;padding-right:0">
           @Col(2) {
             <h1><a href="/">Lixie</a></h1>
           }
           @Col(4) {
-          <ul class="nav nav-pills">
+          <ul class="nav nav-pills" style="padding-top:8px">
             for _, info := range topLevelInfos {
               <li class="nav-item">
                 if info.Id == toplevel {
@@ -33,7 +33,7 @@ templ Base(toplevel int, title string) {
           }
           @Col(6) {
             if toplevel != TopLevelMain {
-              <h2 class="float-end">{title}</h2>
+              <h2 class="position-absolute bottom-0 end-0" style="padding-right:8px">{title}</h2>
             }
           }
         </div>
