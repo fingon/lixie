@@ -7,8 +7,7 @@ excuse but instead use the modern excuse - Mistral came up with it).
 The goal of Lixie is to be single binary, zero external dependency
 tool. Currently there are two planned modes:
 
-- configuration generator for tools ( mainly
-  [vector](https://vector.dev) )
+- configuration generator for tools ( mainly [vector](https://vector.dev) )
 
 - standalone web UI for viewing and categorizing logs ( and other events of
   interest later on )
@@ -54,15 +53,12 @@ recommended as that will include edit-delete-etc link calls.
 
 ## Big features
 
-- Optimize rule evaluation (can be also used when generating rules for
+- Optimize rule evaluation (it could be also used when generating rules for
   Vector); identify the stuff with most cardinality, match by that first
   (and order the rules based on that too; it doesn't hurt to make it user
   visible)
 
 - Rethink how rules are stored; just big json file can get bit unwieldy?
-
-- Vector configuration to add labeling based on verdict
-
 
 ## Robustness
 

@@ -12,4 +12,4 @@ package data
 // When adding rules, these stream keys are NOT included
 //
 // (This doesn't prevent their manual addition)
-var ignoredStreamKeys = []string{"forwarder", "host", "source_source", "source_type"}
+var ignoredStreamKeys = []string{"forwarder", "host", "lixie", "source_source", "source_type"}
