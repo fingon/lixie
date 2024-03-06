@@ -34,6 +34,9 @@ transforms:
 from dataclasses import dataclass
 import json
 
+# Used only in .txt; json/yaml currently escape newlines anyway
+INDENT=""
+
 
 def load_rules(path):
     with open(path) as f:
@@ -145,7 +148,7 @@ def indent(frags):
         nextfrag = frags[i + 1] if i < len(frags) - 1 else ""
         if frag.startswith("}"):
             indent = indent - 1
-        indstring = " " * indent
+        indstring = INDENT * indent
         if not skip_next_indent:
             frag = indstring + frag
         if not frag.endswith("(") and not nextfrag.startswith(")"):
@@ -181,6 +184,13 @@ def save_vector_config(path, config):
             # TODO: Figure how to keep the multiline strings looking pretty (as it is, they're .. squashed..)
             yaml.dump(config, f)
             return
+        if path.endswith(".json"):
+            json.dump(config, f)
+            return
+        if path.endswith(".txt"):
+            transform = next(iter(config["transforms"].values()))
+            f.write(transform["source"])
+            return
     raise NotImplementedError
 
 
@@ -214,11 +224,16 @@ if __name__ == "__main__":
         "--output",
         "-o",
         required=True,
-        help="Vector output configuration",
+        help="(Vector) output configuration",
     )
     args = p.parse_args()
+    if args.output.endswith(".txt"):
+        # Debug mode
+        INDENT="  "
+        config = {"transforms": {args.name: {"type": "remap"}}}
+    else:
+        config = load_vector_config(args.config)
     rules = load_rules(args.db)
     vrl = rules_to_vrl(rules)
-    config = load_vector_config(args.config)
     update_lixie_remap(config, name=args.name, vrl=vrl)
     save_vector_config(args.output, config)
