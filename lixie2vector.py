@@ -35,7 +35,7 @@ from dataclasses import dataclass
 import json
 
 # Used only in .txt; json/yaml currently escape newlines anyway
-INDENT=""
+INDENT = ""
 
 
 def load_rules(path):
@@ -51,8 +51,10 @@ def get_source_matcher(rule):
 
 
 # Really lame, not hostile user aimed escaping.
-def escape(s, outer):
-    return s.replace("\\", "\\\\").replace(outer, "\\" + outer)
+def escape(s, outer, escape_escape):
+    if escape_escape:
+        s = s.replace("\\", "\\\\")
+    return s.replace(outer, "\\" + outer)
 
 
 def split_by_source_expr(rules):
@@ -78,10 +80,10 @@ def dump_rule_matchers_ignoring_source(rule):
         op = m["Op"]
         value = m["Value"]
         if op == "=":
-            evalue = escape(value, '"')
+            evalue = escape(value, '"', True)
             expr = f'.{field} == "{evalue}"'
         elif op == "=~":
-            evalue = escape(value, "'")
+            evalue = escape(value, "'", False)
             expr = f"(parse_regex(.{field}, r'^{evalue}$') ?? null) != null"
         else:
             raise NotImplementedError
@@ -229,7 +231,7 @@ if __name__ == "__main__":
     args = p.parse_args()
     if args.output.endswith(".txt"):
         # Debug mode
-        INDENT="  "
+        INDENT = "  "
         config = {"transforms": {args.name: {"type": "remap"}}}
     else:
         config = load_vector_config(args.config)
