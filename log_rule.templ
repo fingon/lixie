@@ -37,6 +37,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
       @Col(8) {
         <label for={commentKey} class="form-label">Comment</label>
         <input class="form-text" type="text" name={commentKey}
+               style="width:100%"
                value={rule.Comment} placeholder="Comment, if any" />
         }
 
@@ -74,6 +75,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
                  hx-select="#logs"
                  hx-swap="outerHTML"
                  hx-target="#logs"
+                 style="width:100%"
                  value={matcher.Value} placeholder="Value of the operation" />
         }
       }
