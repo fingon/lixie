@@ -153,7 +153,7 @@ def indent(frags):
         indstring = INDENT * indent
         if not skip_next_indent:
             frag = indstring + frag
-        if not frag.endswith("(") and not nextfrag.startswith(")"):
+        if not frag.endswith("(") and not nextfrag.startswith(")") and not nextfrag.startswith("&& "):
             frag = frag + "\n"
             skip_next_indent = False
         else:
