@@ -69,7 +69,7 @@ func run(
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
 	loki_server := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
-	loki_selector := flags.String("loki-selector", "{forwarder=\"vector\"}", "Selector to use when querying logs from Loki")
+	loki_selector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
 	db_path := flags.String("db", "db.json", "Database to use")
 
 	port := flags.Int("port", 8080, "Port number to listen at")
