@@ -35,7 +35,7 @@ type Log struct {
 
 func (self *Log) Hash() uint64 {
 	if self.hash == nil {
-		hash := xxhash.Sum64([]byte(self.RawMessage))
+		hash := xxhash.Sum64([]byte(self.RawMessage)) ^ uint64(self.Timestamp)
 		self.hash = &hash
 	}
 	return *self.hash
