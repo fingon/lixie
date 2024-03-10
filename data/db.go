@@ -171,6 +171,7 @@ func (self *Database) updateLogsWithLock() {
 			break
 		}
 	}
+	self.addLogsToCounts(logs)
 	self.logs = append(logs, self.logs...)
 }
 
@@ -247,6 +248,19 @@ func (self *Database) LogToRule(log *Log) *LogRule {
 	return log.ToRule(self.rulesVersion, self.LogRulesReversed())
 }
 
+func (self *Database) addLogsToCounts(logs []*Log) {
+	r2c := self.rid2Count
+	if r2c == nil {
+		return
+	}
+	for _, log := range logs {
+		rule := self.LogToRule(log)
+		if rule != nil {
+			r2c[rule.Id]++
+		}
+	}
+}
+
 func (self *Database) RuleCount(rid int) int {
 	self.logLock.Lock()
 	defer self.logLock.Unlock()
@@ -257,17 +271,12 @@ func (self *Database) RuleCount(rid int) int {
 	}
 
 	if self.rid2Count == nil {
-		r2c := make(map[int]int)
+		r2c := make(map[int]int, len(self.LogRules))
 		for _, rule := range self.LogRules {
-			count := 0
-			for _, log := range self.logs {
-				if self.LogToRule(log) == rule {
-					count++
-				}
-			}
-			r2c[rule.Id] = count
+			r2c[rule.Id] = 0
 		}
 		self.rid2Count = r2c
+		self.addLogsToCounts(self.logs)
 	}
 	return self.rid2Count[rid]
 }

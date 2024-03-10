@@ -10,9 +10,9 @@ GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
 
 build: $(BINARY)
 
-$(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED)
+$(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
+	go test ./...
 	go build .
-	go test
 
 .PHONY: clean
 clean:
