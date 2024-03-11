@@ -9,15 +9,12 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
   <form action={logRuleEdit.URL()}>
     <input type="hidden" name={idKey} value={ruleIdString(rule)} />
     <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
-    @Row("add-new") {
-      @Col(2) {
-        <input class="btn btn-secondary"  type="submit" name={actionAdd} value="Add field" />
-      }
+    @Row("done") {
+      @Col(6)
       @Col(2) {
         <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
       }
       if rule.Id > 0 {
-      @Col(6)
       @Col(2) {
         <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
       }
@@ -78,6 +75,11 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
                  style="width:100%"
                  value={matcher.Value} placeholder="Value of the operation" />
         }
+      }
+    }
+    @Row("add") {
+      @Col(2) {
+        <input class="btn btn-secondary"  type="submit" name={actionAdd} value="Add field" />
       }
     }
   </form>
