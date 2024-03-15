@@ -30,6 +30,10 @@ serve:
 %_templ.go: %.templ
 	templ generate -f $<
 
+upgrade:
+	go get -u ./...
+	go mod tidy
+
 # This is unlikely to work for anyone else than me, but..
 update-sample:
 	rm -rf ./localhost:8080

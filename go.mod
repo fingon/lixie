@@ -3,7 +3,7 @@ module github.com/fingon/lixie
 go 1.22.0
 
 require (
-	github.com/a-h/templ v0.2.543
+	github.com/a-h/templ v0.2.598
 	github.com/cespare/xxhash v1.1.0
 	gotest.tools/v3 v3.5.1
 )
