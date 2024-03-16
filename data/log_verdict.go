@@ -50,7 +50,6 @@ func LogMatchesRule(log *Log, rule *LogRule) bool {
 		}
 	}
 	return true
-
 }
 
 func LogToRule(log *Log, rules []*LogRule) *LogRule {

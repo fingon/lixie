@@ -13,7 +13,12 @@ all: build lint
 build: $(BINARY)
 
 lint:
-	golangci-lint run
+	golangci-lint run \
+		-E goimports \
+		-E gofmt \
+		-E misspell \
+		-E whitespace \
+		--fix
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 	go test ./...

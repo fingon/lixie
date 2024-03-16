@@ -118,7 +118,6 @@ func findMatchingOtherRules(db *data.Database, logs []*data.Log, skip_rule *data
 
 func logRuleEditHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		rule, err := NewLogRuleFromForm(r)
 		if err != nil {
 			// TODO log error?
@@ -137,7 +136,6 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 							http.Error(w, err.Error(), 500)
 							return
 						}
-
 					} else {
 						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
 					}

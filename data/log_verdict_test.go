@@ -50,7 +50,6 @@ func TestLogVerdictEq(t *testing.T) {
 	rule5_ham.Ham = true
 	verdict = LogVerdict(log, []*LogRule{&rule2_ok, &rule5_ham})
 	assert.Equal(t, verdict, LogVerdictSpam)
-
 }
 
 func TestLogVerdictRe(t *testing.T) {

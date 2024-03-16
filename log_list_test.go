@@ -52,5 +52,4 @@ func TestLogList(t *testing.T) {
 	err = conf2.Init(URLWrapper(u.Query()))
 	assert.Equal(t, err, nil)
 	assert.Equal(t, conf1, conf2)
-
 }

@@ -41,7 +41,6 @@ func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 func run(
 	ctx context.Context,
 	args []string) error {
-
 	// This would be relevant only if we handled our own context.
 	// However, http.ListenAndServe catches os.Interrupt so this
 	// is not necessary:
