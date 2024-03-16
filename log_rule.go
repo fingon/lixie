@@ -132,7 +132,12 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 					if v.Version == rule.Version {
 						rule.Version++
 						db.LogRules[i] = rule
-						db.Save()
+						err = db.Save()
+						if err != nil {
+							http.Error(w, err.Error(), 500)
+							return
+						}
+
 					} else {
 						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
 					}
@@ -143,13 +148,20 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 
 			// Not found. Add new one.
 			fmt.Printf("Adding new rule\n")
-			db.Add(*rule)
+			err = db.Add(*rule)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 			return
 		}
 		logs := findMatchingLogs(db, rule)
 		rules := findMatchingOtherRules(db, logs.Logs, rule)
-		LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+		err = LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
 	})
 }
 
@@ -161,11 +173,11 @@ func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 			// TODO handle error
 			return
 		}
-		if db.Delete(rid) {
-			http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
+		if err = db.Delete(rid); err != nil {
+			http.NotFound(w, r)
 			return
 		}
-		http.NotFound(w, r)
+		http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
 	})
 }
 
@@ -181,7 +193,10 @@ func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 			if rule.Id == rid {
 				logs := findMatchingLogs(db, rule)
 				rules := findMatchingOtherRules(db, logs.Logs, rule)
-				LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+				err = LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+				}
 				return
 			}
 		}

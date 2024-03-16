@@ -11,9 +11,9 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -50,6 +50,9 @@ type Database struct {
 	path string
 }
 
+var ErrHashNotFound = errors.New("specified hash not found")
+var ErrRuleNotFound = errors.New("specified rule not found")
+
 func (self *Database) LogRulesReversed() []*LogRule {
 	if self.logRulesReversed == nil {
 		count := len(self.LogRules)
@@ -62,21 +65,20 @@ func (self *Database) LogRulesReversed() []*LogRule {
 	return self.logRulesReversed
 }
 
-func (self *Database) Add(r LogRule) {
+func (self *Database) Add(r LogRule) error {
 	r.Id = self.nextLogRuleId()
 	self.LogRules = append(self.LogRules, &r)
-	self.Save()
+	return self.Save()
 }
 
-func (self *Database) Delete(rid int) bool {
+func (self *Database) Delete(rid int) error {
 	for i, v := range self.LogRules {
 		if v.Id == rid {
 			self.LogRules = slices.Delete(self.LogRules, i, i+1)
-			self.Save()
-			return true
+			return self.Save()
 		}
 	}
-	return false
+	return ErrRuleNotFound
 }
 
 func (self *Database) nextLogRuleId() int {
@@ -191,17 +193,17 @@ func (self *Database) getLogByHash(hash uint64) *Log {
 	return nil
 }
 
-func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
-	log := self.getLogByHash(hash)
-	if log == nil {
-		return false
+func (self *Database) ClassifyHash(hash uint64, ham bool) error {
+	l := self.getLogByHash(hash)
+	if l == nil {
+		return ErrHashNotFound
 	}
 	// Add filters - message and then all Loki labels with cardinality > 1
 	rule := LogRule{Ham: ham, Matchers: []LogFieldMatcher{{
 		Field: "message",
 		Op:    "=",
-		Value: log.Message}}}
-	for _, k := range log.StreamKeys {
+		Value: l.Message}}}
+	for _, k := range l.StreamKeys {
 		for _, ignored_stream := range ignoredStreamKeys {
 			if ignored_stream == k {
 				goto next
@@ -209,38 +211,43 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) bool {
 		}
 		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Field: k,
 			Op:    "=",
-			Value: log.Stream[k]})
+			Value: l.Stream[k]})
 	next:
 	}
-	self.Add(rule)
-	return true
+	return self.Add(rule)
 }
 
-func (self *Database) Save() {
+func (self *Database) Save() error {
 	self.logRulesReversed = nil
 	self.rulesVersion++
 	self.rid2Count = nil
 
 	b, err := json.Marshal(self)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	temp := fmt.Sprintf("%s.tmp", self.path)
 	f, err := os.OpenFile(temp, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 	var ib bytes.Buffer
-	json.Indent(&ib, b, "", " ")
+	err = json.Indent(&ib, b, "", " ")
+	if err != nil {
+		return err
+	}
 
 	_, err = ib.WriteTo(f)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
-	os.Rename(temp, self.path)
-
+	err = os.Rename(temp, self.path)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
+	return nil
 }
 
 func (self *Database) LogToRule(log *Log) *LogRule {
@@ -284,6 +291,9 @@ func (self *Database) RuleCount(rid int) int {
 func NewDatabaseFromFile(config DatabaseConfig, path string) (db *Database, err error) {
 	db = &Database{config: config, path: path, rulesVersion: 1}
 	f, err := os.Open(path)
+	if err != nil {
+		return
+	}
 	data, err := io.ReadAll(f)
 	if err == nil {
 		err = json.Unmarshal(data, db)

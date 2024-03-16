@@ -21,22 +21,6 @@ import (
 	"github.com/fingon/lixie/data"
 )
 
-func debugRequest(r *http.Request) {
-	// Loop over header names
-	for name, values := range r.Header {
-		// Loop over all values for the name.
-		for _, value := range values {
-			fmt.Printf("Header %s=%s\n", name, value)
-		}
-	}
-
-	for name, value := range r.Form {
-		fmt.Printf("Form %s=%s\n", name, value)
-	}
-	fmt.Printf("\n")
-
-}
-
 // Note: While we don't have any static, double comment = static/ will be empty
 // //go:embed all:static
 var embedContent embed.FS
@@ -110,8 +94,7 @@ func run(
 	// Start the actual server
 	endpoint := fmt.Sprintf("%s:%d", *address, *port)
 	fmt.Printf("Listening on %s\n", endpoint)
-	http.ListenAndServe(endpoint, nil)
-	return nil
+	return http.ListenAndServe(endpoint, nil)
 }
 
 func main() {

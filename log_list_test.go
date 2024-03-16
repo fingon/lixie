@@ -33,8 +33,10 @@ func TestLogList(t *testing.T) {
 	u, err := url.Parse(s)
 	assert.Equal(t, err, nil)
 
-	conf_ := NewLogListConfig(URLWrapper(u.Query()))
-	assert.Equal(t, conf, conf_)
+	conf1 := LogListConfig{}
+	err = conf1.Init(URLWrapper(u.Query()))
+	assert.Equal(t, err, nil)
+	assert.Equal(t, conf, conf1)
 
 	// Ensure that sticking in Before means it actually won't be
 	// the same after parsing (it shouldn't be parsed here)
@@ -46,7 +48,9 @@ func TestLogList(t *testing.T) {
 	u, err = url.Parse(s2)
 	assert.Equal(t, err, nil)
 
-	conf2_ := NewLogListConfig(URLWrapper(u.Query()))
-	assert.Equal(t, conf_, conf2_)
+	conf2 := LogListConfig{}
+	err = conf2.Init(URLWrapper(u.Query()))
+	assert.Equal(t, err, nil)
+	assert.Equal(t, conf1, conf2)
 
 }

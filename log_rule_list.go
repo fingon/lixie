@@ -35,10 +35,7 @@ func (self *LogRuleListModel) Filter() {
 	}
 	rules := make([]*data.LogRule, 0, self.Limit)
 	if last > self.Index {
-		for _, rule := range self.LogRules[self.Index:last] {
-			rules = append(rules, rule)
-
-		}
+		rules = append(rules, self.LogRules[self.Index:last]...)
 	}
 	self.LogRules = rules
 }
@@ -49,17 +46,24 @@ func (self *LogRuleListModel) NextLinkString() string {
 
 const indexKey = "i"
 
-func NewLogRuleListModel(r *http.Request, db *data.Database) *LogRuleListModel {
-	rules := db.LogRulesReversed()
-	m := LogRuleListModel{DB: db, LogRules: rules, Limit: 10}
-	intFromForm(r, indexKey, &m.Index)
-	return &m
+func (self *LogRuleListModel) Init(r *http.Request) (err error) {
+	_, err = intFromForm(r, indexKey, &self.Index)
+	return
 }
 
 func logRuleListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		m := NewLogRuleListModel(r, db)
+		rules := db.LogRulesReversed()
+		m := LogRuleListModel{DB: db, LogRules: rules, Limit: 10}
+		err := m.Init(r)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
 		m.Filter()
-		LogRuleList(*m).Render(r.Context(), w)
+		err = LogRuleList(m).Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
 	})
 }

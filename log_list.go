@@ -31,14 +31,21 @@ const expandKey = "exp"
 const beforeKey = "b"
 const filterKey = "f"
 
-func NewLogListConfig(r FormValued) LogListConfig {
-	autorefresh := r.FormValue(autoRefreshKey) != ""
-	expand := uint64(0)
-	uint64FromForm(r, expandKey, &expand)
-	filter := data.LogVerdictSpam
-	intFromForm(r, filterKey, &filter)
+func (self *LogListConfig) Init(r FormValued) error {
+	self.AutoRefresh = r.FormValue(autoRefreshKey) != ""
+	_, err := uint64FromForm(r, expandKey, &self.Expand)
+	if err != nil {
+		return err
+	}
+
+	self.Filter = data.LogVerdictSpam
+	_, err = intFromForm(r, filterKey, &self.Filter)
+	if err != nil {
+		return err
+	}
+
 	// before is omitted intentionally
-	return LogListConfig{AutoRefresh: autorefresh, Expand: expand, Filter: filter}
+	return nil
 }
 
 func (self LogListConfig) WithAutoRefresh(v bool) LogListConfig {
@@ -160,12 +167,25 @@ func (self *LogListModel) Filter() {
 func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var before_hash uint64
-		uint64FromForm(r, beforeKey, &before_hash)
-		model := LogListModel{Config: NewLogListConfig(r),
+		_, err := uint64FromForm(r, beforeKey, &before_hash)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		config := LogListConfig{}
+		err = config.Init(r)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		model := LogListModel{Config: config,
 			BeforeHash: before_hash,
 			Limit:      20,
 			DB:         db}
 		model.Filter()
-		LogList(model).Render(r.Context(), w)
+		err = LogList(model).Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+		}
 	})
 }

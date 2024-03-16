@@ -34,13 +34,18 @@ func logClassifyHandler(db *data.Database, ham bool) http.Handler {
 		hash_string := r.PathValue("hash")
 		hash, err := strconv.ParseUint(hash_string, 10, 64)
 		if err != nil {
-			// TODO handle error
+			http.Error(w, err.Error(), 400)
 			return
 		}
-		if db.ClassifyHash(hash, ham) {
-			http.Redirect(w, r, topLevelLog.Path, http.StatusSeeOther)
+		err = db.ClassifyHash(hash, ham)
+		if err == data.ErrHashNotFound {
+			http.NotFound(w, r)
 			return
 		}
-		http.NotFound(w, r)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		http.Redirect(w, r, topLevelLog.Path, http.StatusSeeOther)
 	})
 }
