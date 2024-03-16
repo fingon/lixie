@@ -39,21 +39,21 @@ func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 //	stdin  io.Reader,
 //	stdout, stderr io.Writer,
 func run(
-	ctx context.Context,
+	_ context.Context,
 	args []string) error {
 	// This would be relevant only if we handled our own context.
 	// However, http.ListenAndServe catches os.Interrupt so this
 	// is not necessary:
 	//
-	//ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	//defer cancel()
+	// ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	// defer cancel()
 
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
-	loki_server := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
-	loki_selector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
-	db_path := flags.String("db", "db.json", "Database to use")
+	lokiServer := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
+	lokiSelector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
+	dbPath := flags.String("db", "db.json", "Database to use")
 
 	port := flags.Int("port", 8080, "Port number to listen at")
 	if err := flags.Parse(args[1:]); err != nil {
@@ -61,23 +61,23 @@ func run(
 	}
 
 	// Static content
-	static_fs, err := fs.Sub(embedContent, "static")
+	staticFS, err := fs.Sub(embedContent, "static")
 	if err != nil {
 		log.Panic(err)
 	}
 
-	config := data.DatabaseConfig{LokiServer: *loki_server,
-		LokiSelector: *loki_selector}
-	db := setupDatabase(config, *db_path)
+	config := data.DatabaseConfig{LokiServer: *lokiServer,
+		LokiSelector: *lokiSelector}
+	db := setupDatabase(config, *dbPath)
 
 	// Configure the routes
-	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	// Other options: StatusMovedPermanently, StatusFound
 	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
-	//})
+	// })
 	http.HandleFunc("/", http.NotFound)
-	main_handler := templ.Handler(MainPage())
-	http.Handle("/{$}", main_handler)
+	mainHandler := templ.Handler(MainPage())
+	http.Handle("/{$}", mainHandler)
 
 	http.Handle(topLevelLog.PathMatcher(), logListHandler(db))
 	http.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(db, true))
@@ -88,7 +88,7 @@ func run(
 	http.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
 	http.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static_fs))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 
 	// Start the actual server
 	endpoint := fmt.Sprintf("%s:%d", *address, *port)

@@ -41,14 +41,14 @@ func (self *Log) Hash() uint64 {
 	return *self.hash
 }
 
-func (self *Log) IdString() string {
+func (self *Log) IDString() string {
 	return "log-" + strconv.FormatUint(self.Hash(), 10)
 }
 
-func (self *Log) ToRule(rules_version int, rules []*LogRule) *LogRule {
-	if self.rulesVersion != rules_version {
+func (self *Log) ToRule(rulesVersion int, rules []*LogRule) *LogRule {
+	if self.rulesVersion != rulesVersion {
 		self.rule = LogToRule(self, rules)
-		self.rulesVersion = rules_version
+		self.rulesVersion = rulesVersion
 	}
 	return self.rule
 }

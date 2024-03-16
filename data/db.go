@@ -44,7 +44,7 @@ type Database struct {
 	logs    []*Log
 
 	// next id to be added state for rules
-	nextId int
+	nextID int
 
 	// Where is this file saved
 	path string
@@ -66,14 +66,14 @@ func (self *Database) LogRulesReversed() []*LogRule {
 }
 
 func (self *Database) Add(r LogRule) error {
-	r.Id = self.nextLogRuleId()
+	r.ID = self.nextLogRuleID()
 	self.LogRules = append(self.LogRules, &r)
 	return self.Save()
 }
 
 func (self *Database) Delete(rid int) error {
 	for i, v := range self.LogRules {
-		if v.Id == rid {
+		if v.ID == rid {
 			self.LogRules = slices.Delete(self.LogRules, i, i+1)
 			return self.Save()
 		}
@@ -81,27 +81,27 @@ func (self *Database) Delete(rid int) error {
 	return ErrRuleNotFound
 }
 
-func (self *Database) nextLogRuleId() int {
-	id := self.nextId
+func (self *Database) nextLogRuleID() int {
+	id := self.nextID
 	if id == 0 {
 		id = 1 // Start at 1 even with empty database
 		for _, v := range self.LogRules {
-			if v.Id >= id {
-				id = v.Id + 1
+			if v.ID >= id {
+				id = v.ID + 1
 			}
 		}
 	}
-	self.nextId = id + 1
+	self.nextID = id + 1
 	return id
 }
 
 func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	logs := []*Log{}
 
-	base := fmt.Sprintf("%s/loki/api/v1/query_range", self.config.LokiServer)
+	base := self.config.LokiServer + "/loki/api/v1/query_range"
 	v := url.Values{}
 	v.Set("query", self.config.LokiSelector)
-	//v.Set("direction", "backward")
+	// v.Set("direction", "backward")
 	v.Set("limit", "5000")
 	if start > 0 {
 		v.Set("start", strconv.FormatInt(start, 10))
@@ -204,8 +204,8 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 		Op:    "=",
 		Value: l.Message}}}
 	for _, k := range l.StreamKeys {
-		for _, ignored_stream := range ignoredStreamKeys {
-			if ignored_stream == k {
+		for _, ignoredStream := range ignoredStreamKeys {
+			if ignoredStream == k {
 				goto next
 			}
 		}
@@ -227,7 +227,7 @@ func (self *Database) Save() error {
 		return err
 	}
 
-	temp := fmt.Sprintf("%s.tmp", self.path)
+	temp := self.path + ".tmp"
 	f, err := os.OpenFile(temp, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -263,7 +263,7 @@ func (self *Database) addLogsToCounts(logs []*Log) {
 	for _, log := range logs {
 		rule := self.LogToRule(log)
 		if rule != nil {
-			r2c[rule.Id]++
+			r2c[rule.ID]++
 		}
 	}
 }
@@ -280,7 +280,7 @@ func (self *Database) RuleCount(rid int) int {
 	if self.rid2Count == nil {
 		r2c := make(map[int]int, len(self.LogRules))
 		for _, rule := range self.LogRules {
-			r2c[rule.Id] = 0
+			r2c[rule.ID] = 0
 		}
 		self.rid2Count = r2c
 		self.addLogsToCounts(self.logs)

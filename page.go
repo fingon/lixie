@@ -8,8 +8,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/a-h/templ"
 )
 
@@ -20,13 +18,13 @@ const (
 )
 
 type PageInfo struct {
-	Id    int
+	ID    int
 	Title string
 	Path  string
 }
 
 func (self *PageInfo) PathMatcher() string {
-	return fmt.Sprintf("%s/{$}", self.Path)
+	return self.Path + "/{$}"
 }
 
 func (self *PageInfo) URL() templ.SafeURL {

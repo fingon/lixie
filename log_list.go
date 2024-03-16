@@ -138,9 +138,9 @@ func (self *LogListModel) Filter() {
 	logs := make([]*data.Log, 0, self.Limit)
 	active := self.BeforeHash == 0
 	count := 0
-	all_logs := self.DB.Logs()
-	self.TotalCount = len(all_logs)
-	for _, log := range all_logs {
+	allLogs := self.DB.Logs()
+	self.TotalCount = len(allLogs)
+	for _, log := range allLogs {
 		if !active {
 			if log.Hash() == self.BeforeHash {
 				active = true
@@ -166,8 +166,8 @@ func (self *LogListModel) Filter() {
 
 func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var before_hash uint64
-		_, err := uint64FromForm(r, beforeKey, &before_hash)
+		var beforeHash uint64
+		_, err := uint64FromForm(r, beforeKey, &beforeHash)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
@@ -179,7 +179,7 @@ func logListHandler(db *data.Database) http.Handler {
 			return
 		}
 		model := LogListModel{Config: config,
-			BeforeHash: before_hash,
+			BeforeHash: beforeHash,
 			Limit:      20,
 			DB:         db}
 		model.Filter()

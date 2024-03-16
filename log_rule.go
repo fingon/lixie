@@ -39,7 +39,7 @@ const actionSave = "s"
 func NewLogRuleFromForm(r FormValued) (result *data.LogRule, err error) {
 	rule := data.LogRule{}
 
-	if _, err = intFromForm(r, idKey, &rule.Id); err != nil {
+	if _, err = intFromForm(r, idKey, &rule.ID); err != nil {
 		return
 	}
 	if _, err = intFromForm(r, versionKey, &rule.Version); err != nil {
@@ -51,26 +51,26 @@ func NewLogRuleFromForm(r FormValued) (result *data.LogRule, err error) {
 
 	// Read the matcher fields
 	i := 0
-	delete := -1
+	del := -1
 	for {
 		// Keep track of what to delete here too
-		if r.FormValue(fieldId(i, deleteField)) != "" {
-			delete = i
+		if r.FormValue(fieldID(i, deleteField)) != "" {
+			del = i
 		}
-		field := r.FormValue(fieldId(i, fieldField))
-		op := r.FormValue(fieldId(i, opField))
-		value := r.FormValue(fieldId(i, valueField))
+		field := r.FormValue(fieldID(i, fieldField))
+		op := r.FormValue(fieldID(i, opField))
+		value := r.FormValue(fieldID(i, valueField))
 		if field == "" && op == "" && value == "" {
 			break
 		}
 		matcher := data.LogFieldMatcher{Field: field, Op: op, Value: value}
 		rule.Matchers = append(rule.Matchers, matcher)
-		i += 1
+		i++
 	}
 
 	// Handle the mutation actions
-	if delete >= 0 {
-		rule.Matchers = slices.Delete(rule.Matchers, delete, delete+1)
+	if del >= 0 {
+		rule.Matchers = slices.Delete(rule.Matchers, del, del+1)
 	}
 	if r.FormValue(actionAdd) != "" {
 		rule.Matchers = append(rule.Matchers, data.LogFieldMatcher{Op: "="})
@@ -93,14 +93,14 @@ func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 	return &m
 }
 
-func findMatchingOtherRules(db *data.Database, logs []*data.Log, skip_rule *data.LogRule) *LogRuleListModel {
+func findMatchingOtherRules(db *data.Database, logs []*data.Log, skipRule *data.LogRule) *LogRuleListModel {
 	// We could also check for strict supersets (but regexp+regexp
 	// matching is tricky). So we just show rules that out of the
 	// box seem to overlap as they match the same rules.
 	rules := []*data.LogRule{}
 
 	for _, rule := range db.LogRules {
-		if rule == skip_rule {
+		if rule == skipRule {
 			continue
 		}
 		for _, log := range logs {
@@ -126,22 +126,23 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 		if r.FormValue(actionSave) != "" {
 			// Look for existing rule first
 			for i, v := range db.LogRules {
-				if v.Id == rule.Id {
-					// TODO do we want to error if version differs?
-					if v.Version == rule.Version {
-						rule.Version++
-						db.LogRules[i] = rule
-						err = db.Save()
-						if err != nil {
-							http.Error(w, err.Error(), 500)
-							return
-						}
-					} else {
-						fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
-					}
-					http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
-					return
+				if v.ID != rule.ID {
+					continue
 				}
+				// TODO do we want to error if version differs?
+				if v.Version == rule.Version {
+					rule.Version++
+					db.LogRules[i] = rule
+					err = db.Save()
+					if err != nil {
+						http.Error(w, err.Error(), 500)
+						return
+					}
+				} else {
+					fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
+				}
+				http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
+				return
 			}
 
 			// Not found. Add new one.
@@ -165,8 +166,8 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 
 func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rid_string := r.PathValue("id")
-		rid, err := strconv.Atoi(rid_string)
+		ridString := r.PathValue("id")
+		rid, err := strconv.Atoi(ridString)
 		if err != nil {
 			// TODO handle error
 			return
@@ -181,14 +182,14 @@ func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 
 func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rid_string := r.PathValue("id")
-		rid, err := strconv.Atoi(rid_string)
+		ridString := r.PathValue("id")
+		rid, err := strconv.Atoi(ridString)
 		if err != nil {
 			// TODO handle error
 			return
 		}
 		for _, rule := range db.LogRules {
-			if rule.Id == rid {
+			if rule.ID == rid {
 				logs := findMatchingLogs(db, rule)
 				rules := findMatchingOtherRules(db, logs.Logs, rule)
 				err = LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
@@ -202,19 +203,19 @@ func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 	})
 }
 
-func fieldId(id int, suffix string) string {
+func fieldID(id int, suffix string) string {
 	return fmt.Sprintf("row-%d-%s", id, suffix)
 }
 
 func ruleTitle(rule data.LogRule) string {
-	if rule.Id > 0 {
-		return fmt.Sprintf("Log rule editor - editing #%d", rule.Id)
+	if rule.ID > 0 {
+		return fmt.Sprintf("Log rule editor - editing #%d", rule.ID)
 	}
 	return "Log rule creator"
 }
 
-func ruleIdString(rule data.LogRule) string {
-	return fmt.Sprintf("%d", rule.Id)
+func ruleIDString(rule data.LogRule) string {
+	return strconv.Itoa(rule.ID)
 }
 
 func ruleLinkString(id int, op string) string {

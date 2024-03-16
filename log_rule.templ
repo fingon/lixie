@@ -7,16 +7,16 @@ import "strconv"
 templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
   @Base(TopLevelLogRule, ruleTitle(rule)) {
   <form action={logRuleEdit.URL()}>
-    <input type="hidden" name={idKey} value={ruleIdString(rule)} />
+    <input type="hidden" name={idKey} value={ruleIDString(rule)} />
     <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
     @Row("done") {
       @Col(6)
       @Col(2) {
         <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
       }
-      if rule.Id > 0 {
+      if rule.ID > 0 {
       @Col(2) {
-        <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
+        <a class="btn btn-danger" href={ruleLink(rule.ID, "delete")}>Delete</a>
       }
       }
     }
@@ -42,10 +42,10 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
     for i, matcher := range rule.Matchers {
       @Row(fmt.Sprintf("row-%d", i)) {
         @Col(1) {
-          <input type="submit" class="btn btn-danger" name={fieldId(i, deleteField)} value="Delete" />
+          <input type="submit" class="btn btn-danger" name={fieldID(i, deleteField)} value="Delete" />
         }
         @Col(2) {
-          <input class="form-text" type="text" name={fieldId(i, fieldField)}
+          <input class="form-text" type="text" name={fieldID(i, fieldField)}
                  hx-trigger="change, keyup delay:200ms changed"
                  hx-post={logRuleEdit.Path}
                  hx-select="#logs"
@@ -54,7 +54,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
                  value={matcher.Field} placeholder="Field name to match" />
         }
         @Col(1) {
-          <select name={fieldId(i, opField)}
+          <select name={fieldID(i, opField)}
                   hx-post={logRuleEdit.Path}
                   hx-select="#logs"
                   hx-swap="outerHTML"
@@ -66,7 +66,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
           </select>
         }
         @Col(8) {
-          <input class="form-text" type="text" name={fieldId(i, valueField)}
+          <input class="form-text" type="text" name={fieldID(i, valueField)}
                  hx-trigger="change, keyup delay:200ms changed"
                  hx-post={logRuleEdit.Path}
                  hx-select="#logs"
@@ -143,7 +143,7 @@ templ LogRuleListTable(m LogRuleListModel) {
       for _, rule := range m.LogRules {
         <tr class="logrule">
           <th scope="row">
-            {strconv.Itoa(rule.Id)}
+            {strconv.Itoa(rule.ID)}
           </th>
           <td scope="row">
             v{strconv.Itoa(rule.Version)}
@@ -160,7 +160,7 @@ templ LogRuleListTable(m LogRuleListModel) {
           </td>
           if m.DB != nil {
           <td>
-            {strconv.Itoa(m.DB.RuleCount(rule.Id))}
+            {strconv.Itoa(m.DB.RuleCount(rule.ID))}
           </td>
           }
           <td class="table-primary">
@@ -171,8 +171,8 @@ templ LogRuleListTable(m LogRuleListModel) {
           </td>
           <td class="table-secondary">
             <div class="position-relative">
-              <a class="btn btn-primary" href={ruleLink(rule.Id, "edit")}>Edit</a>
-              <a class="btn btn-danger" href={ruleLink(rule.Id, "delete")}>Delete</a>
+              <a class="btn btn-primary" href={ruleLink(rule.ID, "edit")}>Edit</a>
+              <a class="btn btn-danger" href={ruleLink(rule.ID, "delete")}>Delete</a>
             </div>
           </td>
         </tr>

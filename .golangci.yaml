@@ -1,0 +1,58 @@
+# See https://golangci-lint.run/usage/linters/ for configuration
+linters:
+   enable:
+     - bodyclose
+     - errchkjson
+     - errname
+     - goconst
+     - gocritic
+     - gofmt
+     - goimports
+     - misspell
+     - nestif
+     - nilerr
+     - perfsprint
+     - prealloc
+     - revive
+     - sqlclosecheck
+     - tenv
+     - testifylint
+     - tparallel
+     - unconvert
+     - wastedassign
+     - whitespace
+     - zerologlint
+
+linters-settings:
+  nestif:
+    # 5 is default
+    min-complexity: 7
+
+  revive:
+    rules:
+      # Defaults as of 202403
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: redefines-builtin-id
+      - name: superfluous-else
+      - name: time-naming
+      - name: unexported-return
+      - name: unreachable-code
+      - name: unused-parameter
+      - name: var-declaration
+      - name: var-naming
+      - name: receiver-naming
+        disabled: true

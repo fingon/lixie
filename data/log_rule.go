@@ -21,24 +21,26 @@ type LogFieldMatcher struct {
 }
 
 func (self *LogFieldMatcher) Match(s string) bool {
+	if self.match != nil {
+		return self.match(s)
+	}
+	switch self.Op {
+	case "=":
+		self.match = func(s string) bool {
+			return s == self.Value
+		}
+	case "=~":
+		re, err := regexp.Compile(fmt.Sprintf("^%s$", self.Value))
+		if err == nil {
+			self.match = func(s string) bool {
+				return re.Match([]byte(s))
+			}
+		}
+	}
+	// unknown operations or broken regexps never match
 	if self.match == nil {
-		if self.Op == "=" {
-			self.match = func(s string) bool {
-				return s == self.Value
-			}
-		}
-		if self.Op == "=~" {
-			re, err := regexp.Compile(fmt.Sprintf("^%s$", self.Value))
-			if err == nil {
-				self.match = func(s string) bool {
-					return re.Match([]byte(s))
-				}
-			}
-		}
-		if self.match == nil {
-			self.match = func(s string) bool {
-				return false
-			}
+		self.match = func(_ string) bool {
+			return false
 		}
 	}
 	return self.match(s)
@@ -46,7 +48,7 @@ func (self *LogFieldMatcher) Match(s string) bool {
 
 type LogRule struct {
 	// Id zero is reserved 'not saved'
-	Id int
+	ID int
 
 	// Rule may or may not be disabled
 	Disabled bool

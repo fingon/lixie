@@ -21,7 +21,7 @@ func logLink(log *data.Log, op string) templ.SafeURL {
 	return templ.URL(topLevelLog.Path + fmt.Sprintf("/%d/%s", log.Hash(), op))
 }
 
-func toJson(v interface{}) string {
+func toJSON(v interface{}) string {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return ""
@@ -31,8 +31,8 @@ func toJson(v interface{}) string {
 
 func logClassifyHandler(db *data.Database, ham bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hash_string := r.PathValue("hash")
-		hash, err := strconv.ParseUint(hash_string, 10, 64)
+		hashString := r.PathValue("hash")
+		hash, err := strconv.ParseUint(hashString, 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return

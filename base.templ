@@ -22,7 +22,7 @@ templ Base(toplevel int, title string) {
           <ul class="nav nav-pills" style="padding-top:8px">
             for _, info := range topLevelInfos {
               <li class="nav-item">
-                if info.Id == toplevel {
+                if info.ID == toplevel {
                   <a class="nav-link active" href={templ.URL(info.Path + "/")}>{info.Title}</a>
                 } else {
                   <a class="nav-link" href={templ.URL(info.Path + "/")}>{info.Title}</a>

@@ -5,7 +5,7 @@ import "strconv"
 
 templ LogListRuleLink(rule *data.LogRule) {
   if rule != nil {
-    <a href={ruleLink(rule.Id, "edit")}>{strconv.Itoa(rule.Id)}</a>
+    <a href={ruleLink(rule.ID, "edit")}>{strconv.Itoa(rule.ID)}</a>
   }
 }
 
@@ -23,7 +23,7 @@ templ LogListTable(m LogListModel) {
     </thead>
     <tbody>
       for _, log := range m.Logs {
-        <tr id={log.IdString()}>
+        <tr id={log.IDString()}>
           if !m.Config.AutoRefresh {
           <td>
             <div class="btn-group">
@@ -58,7 +58,7 @@ templ LogListTable(m LogListModel) {
             } else {
               <a href={m.Config.WithExpand(0).ToLink()}>-</a>
               for _, k := range log.FieldsKeys {
-                {k}={toJson(log.Fields[k])}<br/>
+                {k}={toJSON(log.Fields[k])}<br/>
               }
             }
           </td>

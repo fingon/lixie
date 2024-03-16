@@ -23,32 +23,32 @@ func TestLogVerdictEq(t *testing.T) {
 	assert.Equal(t, verdict, LogVerdictUnknown)
 
 	// Case: stream selector
-	rule1_ok := LogRule{Matchers: []LogFieldMatcher{{Field: "f", Op: "=", Value: "v"}}}
-	verdict = LogVerdict(log, []*LogRule{&rule1_ok})
+	rule1Ok := LogRule{Matchers: []LogFieldMatcher{{Field: "f", Op: "=", Value: "v"}}}
+	verdict = LogVerdict(log, []*LogRule{&rule1Ok})
 	assert.Equal(t, verdict, LogVerdictSpam)
 
 	// Case: message field
-	rule2_ok := LogRule{Matchers: []LogFieldMatcher{{Field: "k", Op: "=", Value: "V"}}}
-	verdict = LogVerdict(log, []*LogRule{&rule2_ok})
+	rule2Ok := LogRule{Matchers: []LogFieldMatcher{{Field: "k", Op: "=", Value: "V"}}}
+	verdict = LogVerdict(log, []*LogRule{&rule2Ok})
 	assert.Equal(t, verdict, LogVerdictSpam)
 
 	// Case: Wrong value in message
-	rule3_no_match := LogRule{Matchers: []LogFieldMatcher{{Field: "f", Op: "=", Value: "different"}}}
+	rule3NoMatch := LogRule{Matchers: []LogFieldMatcher{{Field: "f", Op: "=", Value: "different"}}}
 
-	verdict = LogVerdict(log, []*LogRule{&rule3_no_match})
+	verdict = LogVerdict(log, []*LogRule{&rule3NoMatch})
 	assert.Equal(t, verdict, LogVerdictUnknown)
 
 	// Case: Disabled but otherwise valid rule
-	rule4_disabled := rule1_ok
-	rule4_disabled.Disabled = true
+	rule4Disabled := rule1Ok
+	rule4Disabled.Disabled = true
 
-	verdict = LogVerdict(log, []*LogRule{&rule4_disabled})
+	verdict = LogVerdict(log, []*LogRule{&rule4Disabled})
 	assert.Equal(t, verdict, LogVerdictUnknown)
 
 	// Case: First write wins, spam flag
-	rule5_ham := rule2_ok
-	rule5_ham.Ham = true
-	verdict = LogVerdict(log, []*LogRule{&rule2_ok, &rule5_ham})
+	rule5Ham := rule2Ok
+	rule5Ham.Ham = true
+	verdict = LogVerdict(log, []*LogRule{&rule2Ok, &rule5Ham})
 	assert.Equal(t, verdict, LogVerdictSpam)
 }
 
