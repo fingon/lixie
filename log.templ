@@ -16,7 +16,9 @@ templ LogListTable(m LogListModel) {
       if !m.Config.AutoRefresh && !m.DisableActions {
         <th scope="col">Op</th>
       }
-      <th scope="col">Time</th>
+      <th scope="col">
+        Time<i class="bi bi-arrow-down"></i>
+      </th>
       <th scope="col">Stream</th>
       <th scope="col">Fields</th>
       <th scope="col">Rule</th>

@@ -131,7 +131,9 @@ templ LogRuleMatchersTable(rule data.LogRule) {
 templ LogRuleListTable(m LogRuleListModel) {
   <table class="table table-hover">
     <thead>
-      <th scope="col">#</th>
+      <th scope="col">
+        #<i class="bi bi-arrow-down"></i>
+      </th>
       <th scope="col">State</th>
       if m.DB != nil {
       <th scope="col">Matches</th>
