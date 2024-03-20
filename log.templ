@@ -1,3 +1,4 @@
+// -*- html -*-
 package main
 
 import "github.com/fingon/lixie/data"
@@ -105,7 +106,10 @@ templ LogList(m LogListModel) {
                hx-select="#container" />
         } else {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
-          <a class="btn btn-primary" href={m.Config.ToLink()}>Refresh</a>
+          <a class="btn btn-primary" hx-indicator="#refresh-spinner" href={m.Config.ToLink()}>Refresh</a>
+          <div id="refresh-spinner" class="spinner-border htmx-indicator" role="status">
+            <span class="sr-only">Loading..</span>
+          </div>
         }
       }
       @Col(6) {

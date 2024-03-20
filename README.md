@@ -49,6 +49,8 @@ recommended as that will include edit-delete-etc link calls.
 
 - add error messages if log retrieval fails
 
+- summary log rules page
+
 - (fts) search (for logs, rules)
 
 ## Big features
