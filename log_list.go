@@ -144,7 +144,8 @@ func (self *LogListModel) Filter() {
 	logs := make([]*data.Log, 0, self.Limit)
 	active := self.Config.BeforeHash == 0
 	count := 0
-	allLogs := filterFTS(self.DB.Logs(), self.Config.Search)
+	allLogs := self.DB.Logs()
+	allLogs = filterFTS(allLogs, self.Config.Search, len(allLogs))
 	self.TotalCount = len(allLogs)
 	for _, log := range allLogs {
 		if !active {

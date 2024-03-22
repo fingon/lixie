@@ -64,8 +64,8 @@ type LogRuleListModel struct {
 
 func (self *LogRuleListModel) Filter() {
 	// First do fts (if necessary)
-	rules := filterFTS(self.LogRules, self.Config.Search)
 	last := self.Config.Index + self.Limit
+	rules := filterFTS(self.LogRules, self.Config.Search, last+1)
 	self.HasMore = len(rules) >= last
 	if last >= len(rules) {
 		last = len(rules) - 1
