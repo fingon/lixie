@@ -16,20 +16,20 @@ import (
 	"github.com/fingon/lixie/data"
 )
 
+// This struct represents external configuration - what we can get as query/form parameters
 type LogListConfig struct {
-	// parse form + send query
 	AutoRefresh bool
+	BeforeHash  uint64
 	Expand      uint64
 	Filter      int
-
-	// send query-only
-	Before uint64
+	Search      string
 }
 
 const autoRefreshKey = "ar"
 const expandKey = "exp"
 const beforeKey = "b"
 const filterKey = "f"
+const searchKey = "search"
 
 func (self *LogListConfig) Init(r FormValued) error {
 	self.AutoRefresh = r.FormValue(autoRefreshKey) != ""
@@ -44,6 +44,13 @@ func (self *LogListConfig) Init(r FormValued) error {
 		return err
 	}
 
+	_, err = uint64FromForm(r, beforeKey, &self.BeforeHash)
+	if err != nil {
+		return err
+	}
+
+	self.Search = r.FormValue(searchKey)
+
 	// before is omitted intentionally
 	return nil
 }
@@ -53,8 +60,8 @@ func (self LogListConfig) WithAutoRefresh(v bool) LogListConfig {
 	return self
 }
 
-func (self LogListConfig) WithBefore(v uint64) LogListConfig {
-	self.Before = v
+func (self LogListConfig) WithBeforeHash(v uint64) LogListConfig {
+	self.BeforeHash = v
 	return self
 }
 
@@ -69,14 +76,14 @@ func (self LogListConfig) WithFilter(v int) LogListConfig {
 }
 
 func (self LogListConfig) ToLinkString() string {
-	base := topLevelLog.Path
+	base := topLevelLog.Path + "/"
 	v := url.Values{}
 	// TODO: Better diffs-from-default handling
 	if self.AutoRefresh {
 		v.Set(autoRefreshKey, "1")
 	}
-	if self.Before != 0 {
-		v.Set(beforeKey, strconv.FormatUint(self.Before, 10))
+	if self.BeforeHash != 0 {
+		v.Set(beforeKey, strconv.FormatUint(self.BeforeHash, 10))
 	}
 	if self.Expand != 0 {
 		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
@@ -109,17 +116,16 @@ type LogListModel struct {
 	ExcludeVerdict int
 
 	// Actions
-	DisableActions bool
-
-	// Paging support
-	BeforeHash        uint64
+	DisableActions    bool
 	DisablePagination bool
-	Limit             int
 
 	// Convenience results from filter()
 	EnableAccurateCounting bool
 	FilteredCount          int
 	TotalCount             int
+
+	// For filtering
+	Limit int
 }
 
 func (self *LogListModel) LogToRule(log *data.Log) *data.LogRule {
@@ -136,13 +142,13 @@ func (self *LogListModel) LogVerdict(log *data.Log) int {
 func (self *LogListModel) Filter() {
 	// Some spare capacity but who really cares
 	logs := make([]*data.Log, 0, self.Limit)
-	active := self.BeforeHash == 0
+	active := self.Config.BeforeHash == 0
 	count := 0
-	allLogs := self.DB.Logs()
+	allLogs := filterFTS(self.DB.Logs(), self.Config.Search)
 	self.TotalCount = len(allLogs)
 	for _, log := range allLogs {
 		if !active {
-			if log.Hash() == self.BeforeHash {
+			if log.Hash() == self.Config.BeforeHash {
 				active = true
 			}
 			if self.EnableAccurateCounting && self.LogVerdict(log) != self.Config.Filter {
@@ -166,22 +172,13 @@ func (self *LogListModel) Filter() {
 
 func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var beforeHash uint64
-		_, err := uint64FromForm(r, beforeKey, &beforeHash)
-		if err != nil {
-			http.Error(w, err.Error(), 400)
-			return
-		}
 		config := LogListConfig{}
-		err = config.Init(r)
+		err := config.Init(r)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		model := LogListModel{Config: config,
-			BeforeHash: beforeHash,
-			Limit:      20,
-			DB:         db}
+		model := LogListModel{Config: config, DB: db, Limit: 20}
 		model.Filter()
 		err = LogList(model).Render(r.Context(), w)
 		if err != nil {

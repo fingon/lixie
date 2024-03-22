@@ -86,7 +86,7 @@ templ LogListTable(m LogListModel) {
                   hx-trigger="revealed"
                   hx-swap="outerHTML"
                   hx-select="tbody > tr"
-                  hx-get={m.Config.WithBefore(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
+                  hx-get={m.Config.WithBeforeHash(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
               Loading More...
             </span>
           </td>
@@ -99,7 +99,7 @@ templ LogListTable(m LogListModel) {
 templ LogList(m LogListModel) {
   @Base(TopLevelLog, "Log list") {
     @Row("refresh-and-count") {
-      @Col(4) {
+      @Col(3) {
         if m.Config.AutoRefresh {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
           <div hx-get={m.Config.ToLinkString()}
@@ -114,7 +114,18 @@ templ LogList(m LogListModel) {
           </div>
         }
       }
-      @Col(6) {
+      @Col(3) {
+        <form>
+          <input class="form-text" type="text" name="search"
+                 hx-trigger="change, keyup delay:200ms changed"
+                 hx-post={m.Config.ToLinkString()}
+                 hx-select="#logs"
+                 hx-swap="outerHTML"
+                 hx-target="#logs"
+                 value={m.Config.Search} placeholder="Search for text" />
+        </form>
+      }
+      @Col(4) {
         <ul class="nav nav-pills">
           for verdict := range data.NumLogVerdicts {
             <li class="nav-item">

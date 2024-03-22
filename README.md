@@ -49,9 +49,9 @@ recommended as that will include edit-delete-etc link calls.
 
 - add error messages if log retrieval fails
 
-- summary log rules page
+- fix fts to update counters too
 
-- (fts) search (for logs, rules)
+- summary log rules page
 
 ## Big features
 
@@ -66,6 +66,10 @@ recommended as that will include edit-delete-etc link calls.
     - As an option, could also parallelize it?
 
 - Rethink how rules are stored; just big json file can get bit unwieldy?
+
+- Write library which handles request -> config, and config -> query
+  parameter transformations (manully written stuff is quite ugly, error
+  prone, and non DRY)
 
 ## Robustness
 

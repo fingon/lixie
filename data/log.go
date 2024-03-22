@@ -10,6 +10,7 @@ package data
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cespare/xxhash"
@@ -43,6 +44,10 @@ func (self *Log) Hash() uint64 {
 
 func (self *Log) IDString() string {
 	return "log-" + strconv.FormatUint(self.Hash(), 10)
+}
+
+func (self *Log) MatchesFTS(search string) bool {
+	return strings.Contains(self.RawMessage, search)
 }
 
 func (self *Log) ToRule(rulesVersion int, rules []*LogRule) *LogRule {

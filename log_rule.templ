@@ -200,8 +200,19 @@ templ LogRuleListTable(m LogRuleListModel) {
 templ LogRuleList(m LogRuleListModel) {
   @Base(TopLevelLogRule, "Log rule list") {
     @Row("rule-add") {
-      @Col(2) {
+      @Col(3) {
         <a class="btn btn-secondary" href={logRuleEdit.URL()}>Add rule</a>
+      }
+      @Col(3) {
+        <form>
+          <input class="form-text" type="text" name="search"
+                 hx-trigger="change, keyup delay:200ms changed"
+                 hx-post={m.Config.ToLinkString()}
+                 hx-select="#rules"
+                 hx-swap="outerHTML"
+                 hx-target="#rules"
+                 value={m.Config.Search} placeholder="Search for text" />
+        </form>
       }
     }
     @Row("rules") {

@@ -10,6 +10,7 @@ package data
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type LogFieldMatcher struct {
@@ -46,6 +47,11 @@ func (self *LogFieldMatcher) Match(s string) bool {
 	return self.match(s)
 }
 
+func (self *LogFieldMatcher) MatchesFTS(s string) bool {
+	// TODO: Is field actually meaningful to match with?
+	return strings.Contains(self.Value, s)
+}
+
 type LogRule struct {
 	// Id zero is reserved 'not saved'
 	ID int
@@ -65,4 +71,16 @@ type LogRule struct {
 	// Version of the rule; any time the rule is changed, the
 	// version is incremented
 	Version int
+}
+
+func (self *LogRule) MatchesFTS(search string) bool {
+	if strings.Contains(self.Comment, search) {
+		return true
+	}
+	for _, m := range self.Matchers {
+		if m.MatchesFTS(search) {
+			return true
+		}
+	}
+	return false
 }
