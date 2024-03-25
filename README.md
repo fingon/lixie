@@ -77,6 +77,10 @@ recommended as that will include edit-delete-etc link calls.
 
 - Properly vendor static resources (bootstrap CSS, htmx JS)
 
+- convert viewing preferences to be tracked via cookie
+ - FTS filter: global
+ - others: per-view
+
 ## Prettiness
 
 - favicon

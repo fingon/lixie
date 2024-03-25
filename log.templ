@@ -108,13 +108,10 @@ templ LogList(m LogListModel) {
                hx-select="#container" />
         } else {
           <a class="btn btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
-          <a class="btn btn-primary" hx-indicator="#refresh-spinner" href={m.Config.ToLink()}>Refresh</a>
-          <div id="refresh-spinner" class="spinner-border htmx-indicator" role="status">
-            <span class="sr-only">Loading..</span>
-          </div>
+          <a class="btn btn-primary" href={m.Config.ToLink()}>Refresh</a>
         }
       }
-      @Col(3) {
+      @Col(2) {
         <form>
           <input class="form-text" type="text" name="search"
                  hx-trigger="change, keyup delay:200ms changed"
@@ -125,7 +122,7 @@ templ LogList(m LogListModel) {
                  value={m.Config.Search} placeholder="Search for text" />
         </form>
       }
-      @Col(4) {
+      @Col(5) {
         <ul class="nav nav-pills">
           for verdict := range data.NumLogVerdicts {
             <li class="nav-item">
@@ -134,7 +131,7 @@ templ LogList(m LogListModel) {
                   {data.LogVerdictToString(verdict)} filtered</a>
               } else {
                 <a class="nav-link" href={m.Config.WithFilter(verdict).ToLink()}>
-                  Filter {data.LogVerdictToString(verdict)}</a>
+                  No {data.LogVerdictToString(verdict)}</a>
               }
             </li>
           }

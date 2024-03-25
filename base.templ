@@ -18,8 +18,40 @@ templ Base(toplevel int, title string) {
 
       <!-- htmx -->
       <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+
+      <!-- this loading bar found from Reddit:
+      https://old.reddit.com/r/htmx/comments/1blwnc4/tip_of_the_day_unobtrusive_global_loading/
+      -->
+      <style>
+        .loading-bar {
+            opacity: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent,
+                #000, transparent,
+                #000, transparent
+            );
+        }
+
+        .htmx-request.loading-bar {
+            opacity: 1;
+            animation: fadeIn 2s linear forwards, slide 0.8s ease-in-out infinite;
+        }
+        @keyframes slide {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX( 100%); }
+        }
+
+        @keyframes fadeIn {
+            0%   { opacity: 0; }
+            50%  { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+      </style>
     </head>
-    <body hx-boost="true">
+    <body hx-boost="true" hx-indicator=".loading-bar">
       <div class="container-fluid" id="container">
         <div class="row bg-success-subtle position-relative" id="top" style="padding-left:0;padding-right:0">
           @Col(2) {
@@ -29,11 +61,13 @@ templ Base(toplevel int, title string) {
           <ul class="nav nav-pills" style="padding-top:8px">
             for _, info := range topLevelInfos {
               <li class="nav-item">
-                if info.ID == toplevel {
-                  <a class="nav-link active" href={templ.URL(info.Path + "/")}>{info.Title}</a>
-                } else {
-                  <a class="nav-link" href={templ.URL(info.Path + "/")}>{info.Title}</a>
-                }
+                <a
+                  if info.ID == toplevel {
+                  class="nav-link active"
+                  } else {
+                  class="nav-link"
+                  }
+                  href={templ.URL(info.Path + "/")}>{info.Title}</a>
               </li>
             }
           </ul>
@@ -44,7 +78,7 @@ templ Base(toplevel int, title string) {
             }
           }
         </div>
-        <br />
+        <div class="loading-bar" />
         { children... }
       </div>
     </body>
