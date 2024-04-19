@@ -51,7 +51,7 @@ func run(
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
-	lokiServer := flags.String("loki-server", "http://fw.lan:3100", "Address of the Loki server")
+	lokiServer := flags.String("loki-server", "https://fw.fingon.iki.fi:3100", "Address of the Loki server")
 	lokiSelector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
 	dbPath := flags.String("db", "db.json", "Database to use")
 
