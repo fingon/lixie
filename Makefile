@@ -25,8 +25,8 @@ $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 clean:
 	rm -f *_templ.go *_templ.txt $(BINARY)
 
-.PHONY: install-templ
-install-templ:
+.PHONY:
+dep:
 	go install github.com/a-h/templ/cmd/templ@latest
 
 .PHONY: serve
