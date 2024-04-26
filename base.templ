@@ -61,19 +61,22 @@ templ Base(toplevel int, title string) {
       https://www.tutorialrepublic.com/faq/how-to-add-icons-to-input-submit-button-in-bootstrap.php
       -->
       <style>
-        .icon-input-btn{
+        .icon-submit-btn {
           display: inline-block;
           position: relative;
         }
-        .icon-input-btn input[type="submit"]{
+        .icon-submit-btn input[type="submit"]{
           padding-left: 2em;
         }
-        .icon-input-btn .bi{
+        .icon-submit-btn .bi {
           display: inline-block;
           position: absolute;
           left: 0.65em;
           //top: 30%;
           top: 15%;
+        }
+        .icon-submit-white {
+          color: white;
         }
       </style>
     </head>
@@ -107,16 +110,6 @@ templ Base(toplevel int, title string) {
         <div class="loading-bar" />
         { children... }
       </div>
-      <script>
-        $(document).ready(function(){
-          $('[data-toggle="tooltip"]').tooltip()
-          $(".icon-input-btn").each(function(){
-            var btnFont = $(this).find(".btn").css("font-size");
-            var btnColor = $(this).find(".btn").css("color");
-            $(this).find(".bi").css({'font-size': btnFont, 'color': btnColor});
-          });
-        });
-      </script>
     </body>
   </html>
 }
@@ -175,30 +168,33 @@ templ SaveButton(title string, href templ.SafeURL) {
 }
 
 // Convenience submit components
-
-// TODO: Figure why the input buttons have very different styling from the
-// link buttons (not bothering with tooltip for now)
 templ SubmitButton(title string, class string, name string) {
-  <div class="icon-input-btn">
+  <div class="icon-submit-btn">
     { children... }
-    <input class={class} name={name} value={title} />
+    <input class={class}
+           data-toggle="tooltip"
+           data-delay="500"
+           name={name}
+           title={title}
+           type="submit"
+           value=" "/>
   </div>
 }
 
 templ AddSubmit(title string, name string) {
   @SubmitButton(title, "btn btn-sm btn-primary", name)  {
-    <i class="bi bi-file-earmark-plus"></i>
+    <i class="bi bi-file-earmark-plus icon-submit-white"></i>
   }
 }
 
 templ DeleteSubmit(title string, name string) {
   @SubmitButton(title, "btn btn-sm btn-danger", name)  {
-    <i class="bi bi-trash3"></i>
+    <i class="bi bi-trash3 icon-submit-white"></i>
   }
 }
 
 templ SaveSubmit(title string, name string) {
-  @SubmitButton(title, "btn btn-sm btn-primary", name) {
-    <i class="bi bi-floppy"></i>
+    @SubmitButton(title, "btn btn-sm btn-primary", name) {
+    <i class="bi bi-floppy icon-submit-white"></i>
   }
 }
