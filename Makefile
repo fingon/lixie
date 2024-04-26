@@ -13,9 +13,8 @@ all: build lint
 build: $(BINARY)
 
 # See https://golangci-lint.run/usage/linters/
-
 lint:
-	golangci-lint run --fix
+	golangci-lint run --fix  # Externally installed, e.g. brew
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 	go test ./...
