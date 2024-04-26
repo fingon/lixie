@@ -73,9 +73,11 @@ local Lixie instance which probably does not exist.
 
 - Properly vendor static resources (bootstrap CSS, htmx JS)
 
-- convert viewing preferences to be tracked via cookie
- - FTS filter: global
++ convert viewing preferences to be tracked via cookie
+ - FTS filter: global (partially implemented)
  - others: per-view
+
+- identify better logging pattern
 
 ## Prettiness
 

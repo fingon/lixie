@@ -12,36 +12,31 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 )
 
 // This struct represents external configuration - what we can get as query/form parameters
 type LogRuleListConfig struct {
-	Search string
+	// Global configuration (cookie)
+	Global GlobalConfig
 
 	// Paging support
 	Index int
 }
 
-func (self *LogRuleListConfig) Init(r *http.Request) (err error) {
-	_, err = intFromForm(r, indexKey, &self.Index)
-	if err != nil {
-		return
-	}
-
-	self.Search = r.FormValue(searchKey)
-	return
+func (self *LogRuleListConfig) Init(r *http.Request, w http.ResponseWriter) error {
+	return cm.Run(r, w, &self.Global)
 }
 
 func (self *LogRuleListConfig) ToLinkString() string {
 	base := topLevelLogRule.Path + "/"
 
 	v := url.Values{}
+
+	// Handle run-time state
 	if self.Index != 0 {
 		v.Set(indexKey, strconv.Itoa(self.Index))
-	}
-	if self.Search != "" {
-		v.Set(searchKey, self.Search)
 	}
 	if len(v) == 0 {
 		return base
@@ -65,7 +60,7 @@ type LogRuleListModel struct {
 func (self *LogRuleListModel) Filter() {
 	// First do fts (if necessary)
 	last := self.Config.Index + self.Limit
-	rules := filterFTS(self.LogRules, self.Config.Search, last+1)
+	rules := filterFTS(self.LogRules, self.Config.Global.Search, last+1)
 	self.HasMore = len(rules) >= last
 	if last >= len(rules) {
 		last = len(rules) - 1
@@ -89,7 +84,7 @@ const indexKey = "i"
 func logRuleListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		config := LogRuleListConfig{}
-		err := config.Init(r)
+		err := config.Init(r, w)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return

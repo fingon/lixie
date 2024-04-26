@@ -11,3 +11,9 @@ package main
 
 // This is what is shown by default in log list
 const primaryStreamKey = "source"
+
+// This is global user-specific configuration from/to cookie
+type GlobalConfig struct {
+	// Full Text Search string
+	Search string `json:"search" cm:"gsearch"`
+}

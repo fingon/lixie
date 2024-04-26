@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 )
 
@@ -31,20 +32,20 @@ const beforeKey = "b"
 const filterKey = "f"
 const searchKey = "search"
 
-func (self *LogListConfig) Init(r FormValued) error {
+func (self *LogListConfig) Init(r cm.FormValued) error {
 	self.AutoRefresh = r.FormValue(autoRefreshKey) != ""
-	_, err := uint64FromForm(r, expandKey, &self.Expand)
+	_, err := cm.Uint64FromForm(r, expandKey, &self.Expand)
 	if err != nil {
 		return err
 	}
 
 	self.Filter = data.LogVerdictSpam
-	_, err = intFromForm(r, filterKey, &self.Filter)
+	_, err = cm.IntFromForm(r, filterKey, &self.Filter)
 	if err != nil {
 		return err
 	}
 
-	_, err = uint64FromForm(r, beforeKey, &self.BeforeHash)
+	_, err = cm.Uint64FromForm(r, beforeKey, &self.BeforeHash)
 	if err != nil {
 		return err
 	}

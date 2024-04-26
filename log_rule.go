@@ -14,6 +14,7 @@ import (
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 )
 
@@ -36,17 +37,17 @@ const valueField = "v"
 const actionAdd = "a"
 const actionSave = "s"
 
-func NewLogRuleFromForm(r FormValued) (result *data.LogRule, err error) {
+func NewLogRuleFromForm(r cm.FormValued) (result *data.LogRule, err error) {
 	rule := data.LogRule{}
 
-	if _, err = intFromForm(r, idKey, &rule.ID); err != nil {
+	if _, err = cm.IntFromForm(r, idKey, &rule.ID); err != nil {
 		return
 	}
-	if _, err = intFromForm(r, versionKey, &rule.Version); err != nil {
+	if _, err = cm.IntFromForm(r, versionKey, &rule.Version); err != nil {
 		return
 	}
-	boolFromForm(r, disabledKey, &rule.Disabled)
-	boolFromForm(r, hamKey, &rule.Ham)
+	cm.BoolFromForm(r, disabledKey, &rule.Disabled)
+	cm.BoolFromForm(r, hamKey, &rule.Ham)
 	rule.Comment = r.FormValue(commentKey)
 
 	// Read the matcher fields

@@ -201,13 +201,13 @@ templ LogRuleList(m LogRuleListModel) {
       }
       @Col(2) {
         <form>
-          <input class="form-text" type="text" name="search"
+          <input class="form-text" type="text" name="gsearch"
                  hx-trigger="change, keyup delay:200ms changed"
                  hx-post={m.Config.ToLinkString()}
                  hx-select="#rules"
                  hx-swap="outerHTML"
                  hx-target="#rules"
-                 value={m.Config.Search} placeholder="Search for text" />
+                 value={m.Config.Global.Search} placeholder="Search for text" />
         </form>
       }
     }

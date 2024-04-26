@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Thu Feb 29 20:21:55 2024 mstenber
- * Last modified: Sat Mar 16 11:52:40 2024 mstenber
+ * Last modified: Fri Apr 26 11:32:38 2024 mstenber
  * Edit time:     14 min
  *
  */
@@ -16,12 +16,13 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 	"gotest.tools/v3/assert"
 )
 
-func logRuleToWrapper(rule *data.LogRule) URLWrapper {
-	w := URLWrapper{}
+func logRuleToWrapper(rule *data.LogRule) cm.URLWrapper {
+	w := cm.URLWrapper{}
 	// TODO: Manually populate corresponding values
 	// (normally browser does it so we don't have corresponding 'prod' code)
 	add := func(key, value string) {
