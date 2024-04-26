@@ -31,10 +31,10 @@ templ LogListTable(m LogListModel) {
           <td>
             <div class="btn-group">
               if m.LogVerdict(log) != data.LogVerdictSpam {
-                <a class="btn btn-primary btn-sm" href={logLink(log, "spam")}>-</a>
+                <a class="btn btn-sm btn-primary" href={logLink(log, "spam")}>-</a>
               }
               if m.LogVerdict(log) != data.LogVerdictHam {
-                <a class="btn btn-primary btn-sm" href={logLink(log, "ham")}>!</a>
+                <a class="btn btn-sm btn-primary" href={logLink(log, "ham")}>!</a>
               }
             </div>
           </td>
@@ -101,14 +101,14 @@ templ LogList(m LogListModel) {
     @Row("refresh-and-count") {
       @Col(3) {
         if m.Config.AutoRefresh {
-          <a class="btn btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
+          <a class="btn btn-sm btn-primary" href={m.Config.WithAutoRefresh(false).ToLink()}>Turn off autorefresh</a>
           <div hx-get={m.Config.ToLinkString()}
                hx-trigger="every 1s"
                hx-target="#container"
                hx-select="#container" />
         } else {
-          <a class="btn btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
-          <a class="btn btn-primary" href={m.Config.ToLink()}>Refresh</a>
+          <a class="btn btn-sm btn-primary" href={m.Config.WithAutoRefresh(true).ToLink()}>Turn on autorefresh</a>
+          <a class="btn btn-sm btn-primary" href={m.Config.ToLink()}>Refresh</a>
         }
       }
       @Col(2) {

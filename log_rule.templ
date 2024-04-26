@@ -11,25 +11,25 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
     <input type="hidden" name={idKey} value={ruleIDString(rule)} />
     <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
     @Row("done") {
-      @Col(6)
-      @Col(2) {
-        <input class="btn btn-primary" type="submit" name={actionSave}  value="Save" />
-      }
+      @Col(1) {
+        @SaveSubmit("Save the changes", actionSave)
+        }
+      @Col(10)
       if rule.ID > 0 {
-      @Col(2) {
-        <a class="btn btn-danger" href={ruleLink(rule.ID, "delete")}>Delete</a>
+      @Col(1) {
+        @DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
       }
       }
     }
     @Row("state") {
       @Col(2) {
         <label for={hamKey} class="form-label">Ham</label>
-        <input class="btn btn-secondary" type="checkbox" name={hamKey}
+        <input class="btn btn-sm btn-secondary" type="checkbox" name={hamKey}
                checked?={rule.Ham} value="Ham" />
       }
       @Col(2) {
         <label for={disabledKey} class="form-label">Disabled</label>
-        <input class="btn btn-secondary" type="checkbox" name={disabledKey}
+        <input class="btn btn-sm btn-secondary" type="checkbox" name={disabledKey}
                checked?={rule.Disabled} value="Disabled" />
         }
       @Col(8) {
@@ -43,7 +43,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
     for i, matcher := range rule.Matchers {
       @Row(fmt.Sprintf("row-%d", i)) {
         @Col(1) {
-          <input type="submit" class="btn btn-danger" name={fieldID(i, deleteField)} value="Delete" />
+          @DeleteSubmit("Delete the matcher", fieldID(i, deleteField))
         }
         @Col(2) {
           <input class="form-text" type="text" name={fieldID(i, fieldField)}
@@ -80,7 +80,7 @@ templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel
     }
     @Row("add") {
       @Col(2) {
-        <input class="btn btn-secondary"  type="submit" name={actionAdd} value="Add field" />
+        @AddSubmit("Add field", actionAdd)
       }
     }
   </form>
@@ -140,7 +140,6 @@ templ LogRuleListTable(m LogRuleListModel) {
       }
       <th scope="col">Matchers</th>
       <th scope="col">Comment</th>
-      <th scope="col">Actions</th>
     </thead>
     <tbody>
       for _, rule := range m.LogRules {
@@ -160,6 +159,9 @@ templ LogRuleListTable(m LogRuleListModel) {
             } else {
               Spam
             }
+            <br/>
+            @EditButton("Edit the rule", ruleLink(rule.ID, "edit"))
+            @DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
           </td>
           if m.DB != nil {
           <td>
@@ -171,12 +173,6 @@ templ LogRuleListTable(m LogRuleListModel) {
           </td>
           <td>
             {rule.Comment}
-          </td>
-          <td class="table-secondary">
-            <div class="position-relative">
-              <a class="btn btn-primary" href={ruleLink(rule.ID, "edit")}>Edit</a>
-              <a class="btn btn-danger" href={ruleLink(rule.ID, "delete")}>Delete</a>
-            </div>
           </td>
         </tr>
       }
@@ -201,7 +197,7 @@ templ LogRuleList(m LogRuleListModel) {
   @Base(TopLevelLogRule, "Log rule list") {
     @Row("rule-add") {
       @Col(3) {
-        <a class="btn btn-secondary" href={logRuleEdit.URL()}>Add rule</a>
+        @AddButton("Add a new rule", logRuleEdit.URL())
       }
       @Col(2) {
         <form>
