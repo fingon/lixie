@@ -35,13 +35,9 @@ spam, or redirect it to something with shorter retention period.
 
 # Demo
 
-[Here is an example](http://www.iki.fi/fingon/lixie/). Note that only toplevel links work -
-anything beyond that gets redirected to your own local Lixie instance which
-probably does not exist.
-
-To reproduce it, `wget -r -np -k -l 1 http://localhost:8080/` can be used
-to get 'demo content' out of running dev instance. Deeper link depth is not
-recommended as that will include edit-delete-etc link calls.
+[Here is an example](http://www.iki.fi/fingon/lixie/). Note that only
+toplevel links work - anything beyond that gets redirected to your own
+local Lixie instance which probably does not exist.
 
 # Planned TODO (There is no guarantee these actually get implemented)
 
