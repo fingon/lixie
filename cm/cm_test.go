@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 10:44:18 2024 mstenber
- * Last modified: Fri Apr 26 14:39:52 2024 mstenber
- * Edit time:     40 min
+ * Last modified: Fri Apr 26 21:16:03 2024 mstenber
+ * Edit time:     42 min
  *
  */
 
@@ -55,23 +55,24 @@ func TestParse(t *testing.T) {
 	// first off, ensure the type checking is correct. anything
 	// else than pointer (to a struct) shouldn't work
 	_, err := Parse(nil, nil, nil)
-	assert.Assert(t, err != nil)
+	assert.Assert(t, err, nil)
 
 	es := empty{}
 	_, err = Parse(nil, nil, es)
-	assert.Assert(t, err != nil)
+	assert.Assert(t, err, nil)
+
+	sc0 := staticCookie{name: "cm-cm.empty"}
 
 	i := 42
-	_, err = Parse(nil, nil, &i)
+	_, err = Parse(&sc0, &sc0.URLWrapper, &i)
 	assert.Assert(t, err != nil)
 
-	// nil pointer is still error
-	_, err = Parse(nil, nil, &es)
-	assert.Equal(t, err, ErrNoSource)
+	_, err = Parse(&sc0, &sc0.URLWrapper, &es)
+	assert.Equal(t, err, nil)
 
 	// empty is fine but doesn't do anything yet
 	sc1 := staticCookie{name: "cm-cm.empty"}
-	changed, err := Parse(&sc1, sc1.URLWrapper, &es)
+	changed, err := Parse(&sc1, &sc1.URLWrapper, &es)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, changed, false)
 
@@ -81,7 +82,7 @@ func TestParse(t *testing.T) {
 
 	ts := tt{}
 	sc2 := staticCookie{name: "cm-cm.tt"}
-	changed, err = Parse(&sc2, sc2.URLWrapper, &ts)
+	changed, err = Parse(&sc2, &sc2.URLWrapper, &ts)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, changed, false)
 
@@ -93,7 +94,7 @@ func TestParse(t *testing.T) {
 		"uf":  []string{"42"},
 	})}
 	assert.Equal(t, sc3.FormValue("bf"), "true")
-	changed, err = Parse(&sc3, sc3.URLWrapper, &ts)
+	changed, err = Parse(&sc3, &sc3.URLWrapper, &ts)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, changed, true)
 	assert.Equal(t, ts.B, true)
@@ -113,7 +114,7 @@ func TestParse(t *testing.T) {
 	sc4 := staticCookie{name: "cm-cm.tt", cookie: cookie, err: nil}
 	ts4 := tt{}
 	fmt.Printf("!!!\n")
-	changed, err = Parse(&sc4, sc4.URLWrapper, &ts4)
+	changed, err = Parse(&sc4, &sc4.URLWrapper, &ts4)
 	assert.Equal(t, changed, false)
 	assert.Equal(t, err, nil)
 

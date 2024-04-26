@@ -4,15 +4,14 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 10:35:46 2024 mstenber
- * Last modified: Fri Apr 26 14:38:05 2024 mstenber
- * Edit time:     93 min
+ * Last modified: Fri Apr 26 21:13:04 2024 mstenber
+ * Edit time:     102 min
  *
  */
 
 package cm
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -21,8 +20,6 @@ import (
 type CookieSource interface {
 	Cookie(string) (*http.Cookie, error)
 }
-
-var ErrNoSource = errors.New("specified cookie source is nil")
 
 func cookieName(state any) (string, error) {
 	v := reflect.ValueOf(state)
@@ -37,19 +34,39 @@ func cookieName(state any) (string, error) {
 	return fmt.Sprintf("cm-%s", s.Type()), nil
 }
 
-func Run(r *http.Request, w http.ResponseWriter, state any) error {
+func GetWrapper(r *http.Request) (*URLWrapper, error) {
+	if r == nil {
+		return nil, nil
+	}
 	err := r.ParseForm()
 	if err != nil {
-		return err
+		return nil, err
 	}
+	w := URLWrapper(r.Form)
+	return &w, nil
+}
 
-	changed, err := Parse(r, URLWrapper(r.Form), state)
+func RunWrapper(s CookieSource, r *URLWrapper, w http.ResponseWriter, state any) error {
+	if r == nil {
+		return nil
+	}
+	changed, err := Parse(s, r, state)
 	if err != nil {
 		return err
 	}
 	if changed {
-		fmt.Printf("XXX changed\n")
 		return Write(w, state)
 	}
 	return nil
+}
+
+func Run(r *http.Request, w http.ResponseWriter, state any) error {
+	if r == nil {
+		return nil
+	}
+	wr, err := GetWrapper(r)
+	if err != nil {
+		return err
+	}
+	return RunWrapper(r, wr, w, state)
 }

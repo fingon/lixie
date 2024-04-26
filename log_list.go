@@ -19,46 +19,47 @@ import (
 
 // This struct represents external configuration - what we can get as query/form parameters
 type LogListConfig struct {
-	AutoRefresh bool
-	BeforeHash  uint64
-	Expand      uint64
-	Filter      int
-	Search      string
+	// Global configuration (cookie)
+	Global GlobalConfig
+
+	// Local state (cookie)
+	AutoRefresh bool `json:"ar" cm:"ar"`
+	Filter      int  `json:"f" cm:"f"`
+
+	// These are only handled via links
+	BeforeHash uint64
+	Expand     uint64
 }
 
-const autoRefreshKey = "ar"
 const expandKey = "exp"
 const beforeKey = "b"
-const filterKey = "f"
-const searchKey = "search"
 
-func (self *LogListConfig) Init(r cm.FormValued) error {
-	self.AutoRefresh = r.FormValue(autoRefreshKey) != ""
-	_, err := cm.Uint64FromForm(r, expandKey, &self.Expand)
+func (self *LogListConfig) Init(s cm.CookieSource, wr *cm.URLWrapper, w http.ResponseWriter) error {
+	// Global config
+	err := cm.RunWrapper(s, wr, w, &self.Global)
 	if err != nil {
 		return err
 	}
 
-	self.Filter = data.LogVerdictSpam
-	_, err = cm.IntFromForm(r, filterKey, &self.Filter)
+	// Local config
+	err = cm.RunWrapper(s, wr, w, self)
 	if err != nil {
 		return err
 	}
 
-	_, err = cm.Uint64FromForm(r, beforeKey, &self.BeforeHash)
+	// Link-based state
+	_, err = cm.Uint64FromForm(wr, expandKey, &self.Expand)
 	if err != nil {
 		return err
 	}
 
-	self.Search = r.FormValue(searchKey)
+	_, err = cm.Uint64FromForm(wr, beforeKey, &self.BeforeHash)
+	if err != nil {
+		return err
+	}
 
 	// before is omitted intentionally
 	return nil
-}
-
-func (self LogListConfig) WithAutoRefresh(v bool) LogListConfig {
-	self.AutoRefresh = v
-	return self
 }
 
 func (self LogListConfig) WithBeforeHash(v uint64) LogListConfig {
@@ -71,35 +72,40 @@ func (self LogListConfig) WithExpand(v uint64) LogListConfig {
 	return self
 }
 
-func (self LogListConfig) WithFilter(v int) LogListConfig {
-	self.Filter = v
-	return self
-}
-
-func (self LogListConfig) ToLinkString() string {
+func (self LogListConfig) ToLinkString2(extra string) string {
 	base := topLevelLog.Path + "/"
 	v := url.Values{}
-	// TODO: Better diffs-from-default handling
-	if self.AutoRefresh {
-		v.Set(autoRefreshKey, "1")
-	}
+
+	// Cookie-based stuff is handled in Init
+
+	// Link-based things start here
 	if self.BeforeHash != 0 {
 		v.Set(beforeKey, strconv.FormatUint(self.BeforeHash, 10))
 	}
 	if self.Expand != 0 {
 		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
 	}
-	if self.Filter != data.LogVerdictSpam {
-		v.Set(filterKey, strconv.Itoa(self.Filter))
+	switch {
+	case len(v) > 0 && extra != "":
+		return base + "?" + extra + "&" + v.Encode()
+	case len(v) > 0:
+		return base + "?" + v.Encode()
+	case extra != "":
+		return base + extra
 	}
-	if len(v) == 0 {
-		return base
-	}
-	return base + "?" + v.Encode()
+	return base
+}
+
+func (self LogListConfig) ToLinkString() string {
+	return self.ToLinkString2("")
+}
+
+func (self LogListConfig) ToLink2(extra string) templ.SafeURL {
+	return templ.URL(self.ToLinkString2(extra))
 }
 
 func (self LogListConfig) ToLink() templ.SafeURL {
-	return templ.URL(self.ToLinkString())
+	return self.ToLink2("")
 }
 
 type LogListModel struct {
@@ -146,7 +152,7 @@ func (self *LogListModel) Filter() {
 	active := self.Config.BeforeHash == 0
 	count := 0
 	allLogs := self.DB.Logs()
-	allLogs = filterFTS(allLogs, self.Config.Search, len(allLogs))
+	allLogs = filterFTS(allLogs, self.Config.Global.Search, len(allLogs))
 	self.TotalCount = len(allLogs)
 	for _, log := range allLogs {
 		if !active {
@@ -175,7 +181,13 @@ func (self *LogListModel) Filter() {
 func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		config := LogListConfig{}
-		err := config.Init(r)
+		wr, err := cm.GetWrapper(r)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+
+		err = config.Init(r, wr, w)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return

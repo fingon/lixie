@@ -16,13 +16,14 @@ import (
 )
 
 func TestLogList(t *testing.T) {
-	conf := LogListConfig{Expand: uint64(42), AutoRefresh: true, Filter: 7, BeforeHash: 13}
+	conf := LogListConfig{Expand: uint64(42), BeforeHash: 13}
 	s := conf.ToLinkString()
 	u, err := url.Parse(s)
 	assert.Equal(t, err, nil)
 
 	conf1 := LogListConfig{}
-	err = conf1.Init(cm.URLWrapper(u.Query()))
+	wr := cm.URLWrapper(u.Query())
+	err = conf1.Init(nil, &wr, nil)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, conf, conf1)
 }

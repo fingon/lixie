@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 14:09:03 2024 mstenber
- * Last modified: Fri Apr 26 14:40:37 2024 mstenber
- * Edit time:     5 min
+ * Last modified: Fri Apr 26 21:12:46 2024 mstenber
+ * Edit time:     6 min
  *
  */
 
@@ -19,9 +19,8 @@ import (
 	"reflect"
 )
 
-func Parse(r CookieSource, u URLWrapper, state any) (changed bool, err error) {
+func Parse(r CookieSource, u *URLWrapper, state any) (changed bool, err error) {
 	if r == nil {
-		err = ErrNoSource
 		return
 	}
 	name, err := cookieName(state)
