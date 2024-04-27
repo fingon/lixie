@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 14:08:31 2024 mstenber
- * Last modified: Fri Apr 26 14:19:38 2024 mstenber
- * Edit time:     0 min
+ * Last modified: Sat Apr 27 09:12:05 2024 mstenber
+ * Edit time:     2 min
  *
  */
 
@@ -27,13 +27,14 @@ func ToCookie(state any) (*http.Cookie, error) {
 	if err != nil {
 		return nil, err
 	}
-	expiration := time.Now().Add(365 * 24 * time.Hour)
+	// TODO refresh handling
+	expiration := time.Now().Add(7 * 24 * time.Hour)
 	name, err := cookieName(state)
 	if err != nil {
 		return nil, err
 	}
 	value := base64.StdEncoding.EncodeToString(data)
-	cookie := http.Cookie{Name: name, Value: value, Expires: expiration}
+	cookie := http.Cookie{Name: name, Value: value, Expires: expiration, Path: "/"}
 	return &cookie, nil
 }
 

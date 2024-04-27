@@ -73,11 +73,7 @@ local Lixie instance which probably does not exist.
 
 - Properly vendor static resources (bootstrap CSS, htmx JS)
 
-+ convert viewing preferences to be tracked via cookie
- - FTS filter: global (partially implemented)
- - others: per-view
-
-- identify better logging pattern
+- identify better logging pattern than printf :p
 
 ## Prettiness
 
@@ -85,3 +81,7 @@ local Lixie instance which probably does not exist.
 
 - style the pages properly (right now just basic Bootstrap and one or two
   ugly bits remain)
+
+- perhaps submit names + fields should still be from variables and not
+  hardcoded to templ files? problem is, the golang tags cannot(?) be based
+  on variables anyway
