@@ -45,7 +45,7 @@ func Uint64FromForm(r FormValued, key string, value *uint64) (found bool, err er
 
 func BoolFromForm(r FormValued, key string, value *bool) {
 	raw := r.FormValue(key)
-	if raw == "" {
+	if raw == "" || raw == "false" {
 		return
 	}
 	*value = true

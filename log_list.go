@@ -91,7 +91,7 @@ func (self LogListConfig) ToLinkString2(extra string) string {
 	case len(v) > 0:
 		return base + "?" + v.Encode()
 	case extra != "":
-		return base + extra
+		return base + "?" + extra
 	}
 	return base
 }
@@ -180,7 +180,7 @@ func (self *LogListModel) Filter() {
 
 func logListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		config := LogListConfig{}
+		config := LogListConfig{Filter: data.LogVerdictSpam}
 		wr, err := cm.GetWrapper(r)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
