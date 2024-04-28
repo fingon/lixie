@@ -18,7 +18,7 @@ import (
 // This struct represents external configuration - what we can get as query/form parameters
 type LogListConfig struct {
 	// Global configuration (cookie)
-	Global GlobalConfig
+	Global GlobalConfig `json:"-"`
 
 	// Local state (cookie)
 	AutoRefresh bool `json:"ar" cm:"auto-refresh"`
