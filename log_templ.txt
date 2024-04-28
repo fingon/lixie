@@ -47,7 +47,8 @@
 \">Turn on autorefresh</a> <a class=\"btn btn-sm btn-primary\" href=\"
 \">Refresh</a>
  
-<form><input class=\"form-text\" type=\"text\" name=\"gsearch\" hx-trigger=\"change, keyup delay:200ms changed\" hx-post=\"
+<form><input class=\"form-text\" type=\"text\" name=\"
+\" hx-trigger=\"change, keyup delay:200ms changed\" hx-post=\"
 \" hx-select=\"#logs\" hx-swap=\"outerHTML\" hx-target=\"#logs\" value=\"
 \" placeholder=\"Search for text\"></form>
  

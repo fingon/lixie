@@ -15,5 +15,7 @@ const primaryStreamKey = "source"
 // This is global user-specific configuration from/to cookie
 type GlobalConfig struct {
 	// Full Text Search string
-	Search string `json:"search" cm:"gsearch"`
+	Search string `json:"s" cm:"gsearch"`
 }
+
+const globalSearchKey = "gsearch" // must match cm: tag above

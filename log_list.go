@@ -9,10 +9,8 @@ package main
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 
-	"github.com/a-h/templ"
 	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 )
@@ -23,16 +21,21 @@ type LogListConfig struct {
 	Global GlobalConfig
 
 	// Local state (cookie)
-	AutoRefresh bool `json:"ar" cm:"ar"`
-	Filter      int  `json:"f" cm:"f"`
+	AutoRefresh bool `json:"ar" cm:"auto-refresh"`
+	Filter      int  `json:"f" cm:"filter"`
 
 	// These are only handled via links
 	BeforeHash uint64
 	Expand     uint64
 }
 
-const expandKey = "exp"
-const beforeKey = "b"
+// These must match ^ cm tags
+const llAutoRefreshKey = "auto-refresh"
+const llFilterKey = "filter"
+
+// These are handled only in templates
+const expandKey = "expand"
+const beforeKey = "before"
 
 func (self *LogListConfig) Init(s cm.CookieSource, wr *cm.URLWrapper, w http.ResponseWriter) error {
 	// Global config
@@ -72,40 +75,22 @@ func (self LogListConfig) WithExpand(v uint64) LogListConfig {
 	return self
 }
 
-func (self LogListConfig) ToLinkString2(extra string) string {
+func (self LogListConfig) Query() *QueryWrapper {
 	base := topLevelLog.Path + "/"
-	v := url.Values{}
+
+	q := QueryWrapper{Base: base}
 
 	// Cookie-based stuff is handled in Init
 
 	// Link-based things start here
 	if self.BeforeHash != 0 {
-		v.Set(beforeKey, strconv.FormatUint(self.BeforeHash, 10))
+		q.Add(beforeKey, strconv.FormatUint(self.BeforeHash, 10))
 	}
 	if self.Expand != 0 {
-		v.Set(expandKey, strconv.FormatUint(self.Expand, 10))
+		q.Add(expandKey, strconv.FormatUint(self.Expand, 10))
 	}
-	switch {
-	case len(v) > 0 && extra != "":
-		return base + "?" + extra + "&" + v.Encode()
-	case len(v) > 0:
-		return base + "?" + v.Encode()
-	case extra != "":
-		return base + "?" + extra
-	}
-	return base
-}
 
-func (self LogListConfig) ToLinkString() string {
-	return self.ToLinkString2("")
-}
-
-func (self LogListConfig) ToLink2(extra string) templ.SafeURL {
-	return templ.URL(self.ToLinkString2(extra))
-}
-
-func (self LogListConfig) ToLink() templ.SafeURL {
-	return self.ToLink2("")
+	return &q
 }
 
 type LogListModel struct {

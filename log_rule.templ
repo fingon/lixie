@@ -201,7 +201,7 @@ templ LogRuleList(m LogRuleListModel) {
       }
       @Col(2) {
         <form>
-          <input class="form-text" type="text" name="gsearch"
+          <input class="form-text" type="text" name={globalSearchKey}
                  hx-trigger="change, keyup delay:200ms changed"
                  hx-post={m.Config.ToLinkString()}
                  hx-select="#rules"

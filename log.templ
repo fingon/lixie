@@ -2,7 +2,6 @@
 package main
 
 import "github.com/fingon/lixie/data"
-import "fmt"
 import "strconv"
 
 templ LogListRuleLink(rule *data.LogRule) {
@@ -44,11 +43,11 @@ templ LogListTable(m LogListModel) {
           <td>
             if m.Config.Expand != log.Hash() && !m.DisableActions {
               {primaryStreamKey}={log.Stream[primaryStreamKey]}
-              <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
+              <a href={m.Config.WithExpand(log.Hash()).Query().ToLink()}>
                 +{strconv.Itoa(len(log.StreamKeys)-1)}
               </a>
             } else {
-              <a href={m.Config.WithExpand(0).ToLink()}>-</a>
+              <a href={m.Config.WithExpand(0).Query().ToLink()}>-</a>
               for _, k := range log.StreamKeys {
                 {k}={log.Stream[k]}<br/>
               }
@@ -56,11 +55,11 @@ templ LogListTable(m LogListModel) {
            </td>
           <td>
             if m.Config.Expand != log.Hash() && !m.DisableActions {
-              <a href={m.Config.WithExpand(log.Hash()).ToLink()}>
+              <a href={m.Config.WithExpand(log.Hash()).Query().ToLink()}>
                 +{strconv.Itoa(len(log.FieldsKeys))}
               </a>
             } else {
-              <a href={m.Config.WithExpand(0).ToLink()}>-</a>
+              <a href={m.Config.WithExpand(0).Query().ToLink()}>-</a>
               for _, k := range log.FieldsKeys {
                 {k}={toJSON(log.Fields[k])}<br/>
               }
@@ -87,7 +86,7 @@ templ LogListTable(m LogListModel) {
                   hx-trigger="revealed"
                   hx-swap="outerHTML"
                   hx-select="tbody > tr"
-                  hx-get={m.Config.WithBeforeHash(m.Logs[len(m.Logs)-1].Hash()).ToLinkString()}>
+                  hx-get={m.Config.WithBeforeHash(m.Logs[len(m.Logs)-1].Hash()).Query().ToLinkString()}>
               Loading More...
             </span>
           </td>
@@ -102,21 +101,23 @@ templ LogList(m LogListModel) {
     @Row("refresh-and-count") {
       @Col(3) {
         if m.Config.AutoRefresh {
-          <a class="btn btn-sm btn-primary" href={m.Config.ToLink2("ar=false")}>Turn off autorefresh</a>
-          <div hx-get={m.Config.ToLinkString()}
+          <a class="btn btn-sm btn-primary"
+          href={m.Config.Query().Add(llAutoRefreshKey, "false").ToLink()}>Turn off autorefresh</a>
+          <div hx-get={m.Config.Query().ToLinkString()}
                hx-trigger="every 1s"
                hx-target="#container"
                hx-select="#container" />
         } else {
-          <a class="btn btn-sm btn-primary" href={m.Config.ToLink2("ar=true")}>Turn on autorefresh</a>
-          <a class="btn btn-sm btn-primary" href={m.Config.ToLink()}>Refresh</a>
+          <a class="btn btn-sm btn-primary"
+          href={m.Config.Query().Add(llAutoRefreshKey, "true").ToLink()}>Turn on autorefresh</a>
+          <a class="btn btn-sm btn-primary" href={m.Config.Query().ToLink()}>Refresh</a>
         }
       }
       @Col(2) {
         <form>
-          <input class="form-text" type="text" name="gsearch"
+          <input class="form-text" type="text" name={globalSearchKey}
                  hx-trigger="change, keyup delay:200ms changed"
-                 hx-post={m.Config.ToLinkString()}
+                 hx-post={m.Config.Query().ToLinkString()}
                  hx-select="#logs"
                  hx-swap="outerHTML"
                  hx-target="#logs"
@@ -128,11 +129,10 @@ templ LogList(m LogListModel) {
           for verdict := range data.NumLogVerdicts {
             <li class="nav-item">
               if m.Config.Filter == verdict {
-                <a class="nav-link active bg-success-subtle" href={m.Config.ToLink()}>
+                <a class="nav-link active bg-success-subtle" href={m.Config.Query().ToLink()}>
                   {data.LogVerdictToString(verdict)} filtered</a>
               } else {
-                <a class="nav-link" href={m.Config.ToLink2(
-                   fmt.Sprintf("f=%d", verdict))}>
+                <a class="nav-link" href={m.Config.Query().Add(llFilterKey, strconv.Itoa(verdict)).ToLink()}>
                   No {data.LogVerdictToString(verdict)}</a>
               }
             </li>

@@ -81,7 +81,3 @@ local Lixie instance which probably does not exist.
 
 - style the pages properly (right now just basic Bootstrap and one or two
   ugly bits remain)
-
-- perhaps submit names + fields should still be from variables and not
-  hardcoded to templ files? problem is, the golang tags cannot(?) be based
-  on variables anyway

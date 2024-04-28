@@ -17,7 +17,7 @@ import (
 
 func TestLogList(t *testing.T) {
 	conf := LogListConfig{Expand: uint64(42), BeforeHash: 13}
-	s := conf.ToLinkString()
+	s := conf.Query().ToLinkString()
 	u, err := url.Parse(s)
 	assert.Equal(t, err, nil)
 
