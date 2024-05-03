@@ -22,6 +22,12 @@ func filterFTS[T FTSMatchable](s []T, search string, limit int) []T {
 	for _, o := range s {
 		if o.MatchesFTS(search) {
 			filtered = append(filtered, o)
+			if len(filtered) == limit {
+				// We won't reuse the filtered result
+				// anyway, so going beyond limit won't
+				// be useful
+				break
+			}
 		}
 	}
 	return filtered
