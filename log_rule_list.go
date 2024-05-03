@@ -16,6 +16,8 @@ import (
 	"github.com/fingon/lixie/data"
 )
 
+const indexKey = "i"
+
 // This struct represents external configuration - what we can get as query/form parameters
 type LogRuleListConfig struct {
 	// Global configuration (cookie)
@@ -26,6 +28,10 @@ type LogRuleListConfig struct {
 }
 
 func (self *LogRuleListConfig) Init(r *http.Request, w http.ResponseWriter) error {
+	_, err := cm.IntFromForm(r, indexKey, &self.Index)
+	if err != nil {
+		return err
+	}
 	return cm.Run(r, w, &self.Global)
 }
 
@@ -78,8 +84,6 @@ func (self *LogRuleListModel) NextLinkString() string {
 	next.Index += self.Limit
 	return next.ToLinkString()
 }
-
-const indexKey = "i"
 
 func logRuleListHandler(db *data.Database) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
