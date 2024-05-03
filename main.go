@@ -16,10 +16,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/fingon/lixie/data"
 )
+
+var boot = time.Now()
 
 // Note: While we don't have any static, double comment = static/ will be empty
 // //go:embed all:static
@@ -76,7 +79,7 @@ func run(
 	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
 	// })
 	http.HandleFunc("/", http.NotFound)
-	mainHandler := templ.Handler(MainPage())
+	mainHandler := templ.Handler(MainPage(db))
 	http.Handle("/{$}", mainHandler)
 
 	http.Handle(topLevelLog.PathMatcher(), logListHandler(db))

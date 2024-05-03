@@ -1,11 +1,42 @@
 // -*- html -*-
 package main
 
-templ MainPage() {
+import "time"
+import "strconv"
+import "github.com/fingon/lixie/data"
+
+templ MainPage(db *data.Database) {
 	@Base(TopLevelMain, "Lixie") {
 		@Row("") {
-			@Col(12) {
-				Nothing to see here, yet. (See tabs for populated stuff.)
+			@Col(2) {
+				Start time:
+			}
+			@Col(4) {
+				{ boot.Format(time.DateTime) }
+			}
+		}
+		@Row("") {
+			@Col(2) {
+				Uptime:
+			}
+			@Col(4) {
+				{ time.Now().Sub(boot).String() }
+			}
+		}
+		@Row("") {
+			@Col(2) {
+				Log rules:
+			}
+			@Col(4) {
+				{ strconv.Itoa(len(db.LogRules)) }
+			}
+		}
+		@Row("") {
+			@Col(2) {
+				Log lines:
+			}
+			@Col(4) {
+				{ strconv.Itoa(len(db.Logs())) }
 			}
 		}
 	}

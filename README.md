@@ -43,11 +43,13 @@ local Lixie instance which probably does not exist.
 
 ## Features
 
+- add graph(s) to homepage
+  - log lines over time?
+  - pie chart about spam vs ham?
+
 - add error messages if log retrieval fails
 
 - fix fts to update counters too
-
-- summary log rules page
 
 ## Big features
 
@@ -63,9 +65,9 @@ local Lixie instance which probably does not exist.
 
 - Rethink how rules are stored; just big json file can get bit unwieldy?
 
-- Write library which handles request -> config, and config -> query
-  parameter transformations (manully written stuff is quite ugly, error
-  prone, and non DRY)
+- summary log rules page
+
+  - show by e.g. source, and some nice statistics about hits?
 
 ## Robustness
 
