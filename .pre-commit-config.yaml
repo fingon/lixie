@@ -1,0 +1,40 @@
+repos:
+# These are good pretty much anywhere
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0  # Use the ref you want to point at
+  hooks:
+    - id: check-case-conflict
+    - id: check-executables-have-shebangs
+    - id: check-merge-conflict
+    # - id: check-symlinks
+    - id: check-yaml
+    - id: detect-private-key
+    - id: end-of-file-fixer
+    - id: forbid-submodules
+    - id: mixed-line-ending
+    # - id: pretty-format-json
+    - id: trailing-whitespace
+
+- repo: meta
+  hooks:
+    - id: check-hooks-apply
+    - id: check-useless-excludes
+
+# Local configuration
+
+- repo: local
+  hooks:
+
+  - id: fmt-templ-guide
+    name: "Reformat templ.guide templates"
+    language: system
+    files: \.templ$
+    entry: templ fmt
+
+  - id: golangci-lint
+    name: "Run golangci-lint"
+    language: system
+    types: [go]
+    pass_filenames: false
+    entry: make lint

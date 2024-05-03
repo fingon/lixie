@@ -16,6 +16,9 @@ build: $(BINARY)
 lint:
 	golangci-lint run --fix  # Externally installed, e.g. brew
 
+fmt:
+	templ fmt .
+
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 	go test ./...
 	go build .

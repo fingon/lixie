@@ -4,30 +4,24 @@ package main
 import "fmt"
 
 templ Base(toplevel int, title string) {
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <title>{title}</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-      <!-- popper.js, required for bootstrap tooltips -->
-      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-
-      <!-- core bootstrap -->
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-      <!-- bootstrap icons -->
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-      <!-- htmx -->
-      <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
-
-
-      <!-- this loading bar found from Reddit:
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>{ title }</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<!-- popper.js, required for bootstrap tooltips -->
+			<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+			<!-- core bootstrap -->
+			<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"/>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+			<!-- bootstrap icons -->
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+			<!-- htmx -->
+			<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+			<!-- this loading bar found from Reddit:
       https://old.reddit.com/r/htmx/comments/1blwnc4/tip_of_the_day_unobtrusive_global_loading/
       -->
-      <style>
+			<style>
         .loading-bar {
             opacity: 0;
             width: 100%;
@@ -54,13 +48,12 @@ templ Base(toplevel int, title string) {
         }
 
       </style>
-
-      <!--
+			<!--
 
       submit button -> image found in
       https://www.tutorialrepublic.com/faq/how-to-add-icons-to-input-submit-button-in-bootstrap.php
       -->
-      <style>
+			<style>
         .icon-submit-btn {
           display: inline-block;
           position: relative;
@@ -79,122 +72,127 @@ templ Base(toplevel int, title string) {
           color: white;
         }
       </style>
-    </head>
-    <body hx-boost="true" hx-indicator=".loading-bar">
-      <div class="container-fluid" id="container">
-        <div class="row bg-success-subtle position-relative" id="top" style="padding-left:0;padding-right:0">
-          @Col(2) {
-            <h1><a href="/">Lixie</a></h1>
-          }
-          @Col(4) {
-          <ul class="nav nav-pills" style="padding-top:8px">
-            for _, info := range topLevelInfos {
-              <li class="nav-item">
-                <a
-                  if info.ID == toplevel {
-                  class="nav-link active"
-                  } else {
-                  class="nav-link"
-                  }
-                  href={templ.URL(info.Path + "/")}>{info.Title}</a>
-              </li>
-            }
-          </ul>
-          }
-          @Col(6) {
-            if toplevel != TopLevelMain {
-              <h2 class="position-absolute bottom-0 end-0" style="padding-right:8px">{title}</h2>
-            }
-          }
-        </div>
-        <div class="loading-bar" />
-        { children... }
-      </div>
-    </body>
-  </html>
+		</head>
+		<body hx-boost="true" hx-indicator=".loading-bar">
+			<div class="container-fluid" id="container">
+				<div class="row bg-success-subtle position-relative" id="top" style="padding-left:0;padding-right:0">
+					@Col(2) {
+						<h1><a href="/">Lixie</a></h1>
+					}
+					@Col(4) {
+						<ul class="nav nav-pills" style="padding-top:8px">
+							for _, info := range topLevelInfos {
+								<li class="nav-item">
+									<a
+										if info.ID == toplevel {
+											class="nav-link active"
+										} else {
+											class="nav-link"
+										}
+										href={ templ.URL(info.Path + "/") }
+									>{ info.Title }</a>
+								</li>
+							}
+						</ul>
+					}
+					@Col(6) {
+						if toplevel != TopLevelMain {
+							<h2 class="position-absolute bottom-0 end-0" style="padding-right:8px">{ title }</h2>
+						}
+					}
+				</div>
+				<div class="loading-bar"></div>
+				{ children... }
+			</div>
+		</body>
+	</html>
 }
 
 // Fresh row (with N columns of up to 12 width)
 templ Row(id string) {
-  <div class="row" id={id}>
-    { children... }
-  </div>
+	<div class="row" id={ id }>
+		{ children... }
+	</div>
 }
 
 func colForWidth(width int) string {
-  return fmt.Sprintf("col-%d", width)
+	return fmt.Sprintf("col-%d", width)
 }
 
 // Variable-width column
 templ Col(width int) {
-  <div class={colForWidth(width)}>
-    { children... }
-  </div>
+	<div class={ colForWidth(width) }>
+		{ children... }
+	</div>
 }
 
 // Convenience link components
-
 templ ActionButton(title string, class string, href templ.SafeURL) {
-  <a class={class} href={href}
-     data-toggle="tooltip"
-     data-delay="500"
-     title={title}>
-    { children... }
-  </a>
+	<a
+		class={ class }
+		href={ href }
+		data-toggle="tooltip"
+		data-delay="500"
+		title={ title }
+	>
+		{ children... }
+	</a>
 }
 
 templ AddButton(title string, href templ.SafeURL) {
-  @ActionButton(title, "btn btn-sm btn-outline-primary", href) {
-    <i class="bi bi-file-earmark-plus"></i>
-  }
+	@ActionButton(title, "btn btn-sm btn-outline-primary", href) {
+		<i class="bi bi-file-earmark-plus"></i>
+	}
 }
 
 templ DeleteButton(title string, href templ.SafeURL) {
-  @ActionButton(title, "btn btn-sm btn-outline-danger", href) {
-    <i class="bi bi-trash3"></i>
-  }
+	@ActionButton(title, "btn btn-sm btn-outline-danger", href) {
+		<i class="bi bi-trash3"></i>
+	}
 }
 
 templ EditButton(title string, href templ.SafeURL) {
-  @ActionButton(title, "btn btn-sm btn-outline-primary", href) {
-    <i class="bi bi-wrench-adjustable"></i>
-  }
+	@ActionButton(title, "btn btn-sm btn-outline-primary", href) {
+		<i class="bi bi-wrench-adjustable"></i>
+	}
 }
 
 templ SaveButton(title string, href templ.SafeURL) {
-  @ActionButton(title, "btn btn-sm btn-outline-primary", href) {
-    <i class="bi bi-floppy"></i>
-  }
+	@ActionButton(title, "btn btn-sm btn-outline-primary", href) {
+		<i class="bi bi-floppy"></i>
+	}
 }
 
 // Convenience submit components
 templ SubmitButton(title string, class string, name string) {
-  <div class="icon-submit-btn">
-    { children... }
-    <input class={class}
-           data-toggle="tooltip"
-           data-delay="500"
-           name={name}
-           title={title}
-           type="submit"
-           value=" "/>
-  </div>
+	<div class="icon-submit-btn">
+		{ children... }
+		<input
+			class={ class }
+			data-toggle="tooltip"
+			data-delay="500"
+			name={ name }
+			title={ title }
+			type="submit"
+			value=" "
+		/>
+	</div>
 }
 
 templ AddSubmit(title string, name string) {
-  @SubmitButton(title, "btn btn-sm btn-primary", name)  {
-    <i class="bi bi-file-earmark-plus icon-submit-white"></i>
-  }
+	@SubmitButton(title, "btn btn-sm btn-primary", name) {
+		<i class="bi bi-file-earmark-plus icon-submit-white"></i>
+	}
 }
 
 templ DeleteSubmit(title string, name string) {
-  @SubmitButton(title, "btn btn-sm btn-danger", name)  {
-    <i class="bi bi-trash3 icon-submit-white"></i>
-  }
+	@SubmitButton(title, "btn btn-sm btn-danger", name) {
+		<i class="bi bi-trash3 icon-submit-white"></i>
+	}
 }
 
 templ SaveSubmit(title string, name string) {
-    @SubmitButton(title, "btn btn-sm btn-primary", name) {
-    <i class="bi bi-floppy icon-submit-white"></i>
-  }
+	@SubmitButton(title, "btn btn-sm btn-primary", name) {
+		<i class="bi bi-floppy icon-submit-white"></i>
+	}
 }

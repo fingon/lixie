@@ -5,151 +5,169 @@ import "github.com/fingon/lixie/data"
 import "strconv"
 
 templ LogListRuleLink(rule *data.LogRule) {
-  if rule != nil {
-    <a href={ruleLink(rule.ID, "edit")}>{strconv.Itoa(rule.ID)}</a>
-  }
+	if rule != nil {
+		<a href={ ruleLink(rule.ID, "edit") }>{ strconv.Itoa(rule.ID) }</a>
+	}
 }
 
 templ LogListTable(m LogListModel) {
-  <table class="table table-hover">
-    <thead>
-      if !m.Config.AutoRefresh && !m.DisableActions {
-        <th scope="col">Op</th>
-      }
-      <th scope="col">
-        Time<i class="bi bi-arrow-down"></i>
-      </th>
-      <th scope="col">Stream</th>
-      <th scope="col">Fields</th>
-      <th scope="col">Rule</th>
-      <th scope="col">Message</th>
-    </thead>
-    <tbody>
-      for _, log := range m.Logs {
-        <tr id={log.IDString()}>
-          if !m.Config.AutoRefresh {
-          <td>
-            <div class="btn-group">
-              if m.LogVerdict(log) != data.LogVerdictSpam {
-                <a class="btn btn-sm btn-primary" href={logLink(log, "spam")}>-</a>
-              }
-              if m.LogVerdict(log) != data.LogVerdictHam {
-                <a class="btn btn-sm btn-primary" href={logLink(log, "ham")}>!</a>
-              }
-            </div>
-          </td>
-          }
-          <td>{log.Time.Format("15:04:05.000")}</td>
-          <td>
-            if m.Config.Expand != log.Hash() && !m.DisableActions {
-              {primaryStreamKey}={log.Stream[primaryStreamKey]}
-              <a href={m.Config.WithExpand(log.Hash()).Query().ToLink()}>
-                +{strconv.Itoa(len(log.StreamKeys)-1)}
-              </a>
-            } else {
-              <a href={m.Config.WithExpand(0).Query().ToLink()}>-</a>
-              for _, k := range log.StreamKeys {
-                {k}={log.Stream[k]}<br/>
-              }
-           }
-           </td>
-          <td>
-            if m.Config.Expand != log.Hash() && !m.DisableActions {
-              <a href={m.Config.WithExpand(log.Hash()).Query().ToLink()}>
-                +{strconv.Itoa(len(log.FieldsKeys))}
-              </a>
-            } else {
-              <a href={m.Config.WithExpand(0).Query().ToLink()}>-</a>
-              for _, k := range log.FieldsKeys {
-                {k}={toJSON(log.Fields[k])}<br/>
-              }
-            }
-          </td>
-          <td>
-            @LogListRuleLink(m.LogToRule(log))
-          </td>
-          <td>
-            if m.LogVerdict(log) == data.LogVerdictHam {
-              <b>{log.Message}</b>
-            } else if m.LogVerdict(log) == data.LogVerdictSpam {
-              <em>{log.Message}</em>
-            } else {
-              {log.Message}
-            }
-          </td>
-        </tr>
-        }
-        if len(m.Logs) == m.Limit && !m.Config.AutoRefresh && !m.DisablePagination {
-        <tr>
-          <td colspan="4">
-            <span hx-target="closest tr"
-                  hx-trigger="revealed"
-                  hx-swap="outerHTML"
-                  hx-select="tbody > tr"
-                  hx-get={m.Config.WithBeforeHash(m.Logs[len(m.Logs)-1].Hash()).Query().ToLinkString()}>
-              Loading More...
-            </span>
-          </td>
-        </tr>
-        }
-    </tbody>
-  </table>
+	<table class="table table-hover">
+		<thead>
+			if !m.Config.AutoRefresh && !m.DisableActions {
+				<th scope="col">Op</th>
+			}
+			<th scope="col">
+				Time<i class="bi bi-arrow-down"></i>
+			</th>
+			<th scope="col">Stream</th>
+			<th scope="col">Fields</th>
+			<th scope="col">Rule</th>
+			<th scope="col">Message</th>
+		</thead>
+		<tbody>
+			for _, log := range m.Logs {
+				<tr id={ log.IDString() }>
+					if !m.Config.AutoRefresh {
+						<td>
+							<div class="btn-group">
+								if m.LogVerdict(log) != data.LogVerdictSpam {
+									<a class="btn btn-sm btn-primary" href={ logLink(log, "spam") }>-</a>
+								}
+								if m.LogVerdict(log) != data.LogVerdictHam {
+									<a class="btn btn-sm btn-primary" href={ logLink(log, "ham") }>!</a>
+								}
+							</div>
+						</td>
+					}
+					<td>{ log.Time.Format("15:04:05.000") }</td>
+					<td>
+						if m.Config.Expand != log.Hash() && !m.DisableActions {
+							{ primaryStreamKey }={ log.Stream[primaryStreamKey] }
+							<a href={ m.Config.WithExpand(log.Hash()).Query().ToLink() }>
+								+{ strconv.Itoa(len(log.StreamKeys)-1) }
+							</a>
+						} else {
+							<a href={ m.Config.WithExpand(0).Query().ToLink() }>-</a>
+							for _, k := range log.StreamKeys {
+								{ k }={ log.Stream[k] }
+								<br/>
+							}
+						}
+					</td>
+					<td>
+						if m.Config.Expand != log.Hash() && !m.DisableActions {
+							<a href={ m.Config.WithExpand(log.Hash()).Query().ToLink() }>
+								+{ strconv.Itoa(len(log.FieldsKeys)) }
+							</a>
+						} else {
+							<a href={ m.Config.WithExpand(0).Query().ToLink() }>-</a>
+							for _, k := range log.FieldsKeys {
+								{ k }={ toJSON(log.Fields[k]) }
+								<br/>
+							}
+						}
+					</td>
+					<td>
+						@LogListRuleLink(m.LogToRule(log))
+					</td>
+					<td>
+						if m.LogVerdict(log) == data.LogVerdictHam {
+							<b>{ log.Message }</b>
+						} else if m.LogVerdict(log) == data.LogVerdictSpam {
+							<em>{ log.Message }</em>
+						} else {
+							{ log.Message }
+						}
+					</td>
+				</tr>
+			}
+			if len(m.Logs) == m.Limit && !m.Config.AutoRefresh && !m.DisablePagination {
+				<tr>
+					<td colspan="4">
+						<span
+							hx-target="closest tr"
+							hx-trigger="revealed"
+							hx-swap="outerHTML"
+							hx-select="tbody > tr"
+							hx-get={ m.Config.WithBeforeHash(m.Logs[len(m.Logs)-1].Hash()).Query().ToLinkString() }
+						>
+							Loading More...
+						</span>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
 templ LogList(m LogListModel) {
-  @Base(TopLevelLog, "Log list") {
-    @Row("refresh-and-count") {
-      @Col(3) {
-        if m.Config.AutoRefresh {
-          <a class="btn btn-sm btn-primary"
-          href={m.Config.Query().Add(llAutoRefreshKey, "false").ToLink()}>Turn off autorefresh</a>
-          <div hx-get={m.Config.Query().ToLinkString()}
-               hx-trigger="every 1s"
-               hx-target="#container"
-               hx-select="#container" />
-        } else {
-          <a class="btn btn-sm btn-primary"
-          href={m.Config.Query().Add(llAutoRefreshKey, "true").ToLink()}>Turn on autorefresh</a>
-          <a class="btn btn-sm btn-primary" href={m.Config.Query().ToLink()}>Refresh</a>
-        }
-      }
-      @Col(2) {
-        <form>
-          <input class="form-text" type="text" name={globalSearchKey}
-                 hx-trigger="change, keyup delay:200ms changed"
-                 hx-post={m.Config.Query().ToLinkString()}
-                 hx-select="#logs"
-                 hx-swap="outerHTML"
-                 hx-target="#logs"
-                 value={m.Config.Global.Search} placeholder="Search for text" />
-        </form>
-      }
-      @Col(5) {
-        <ul class="nav nav-pills">
-          for verdict := range data.NumLogVerdicts {
-            <li class="nav-item">
-              if m.Config.Filter == verdict {
-                <a class="nav-link active bg-success-subtle" href={m.Config.Query().ToLink()}>
-                  {data.LogVerdictToString(verdict)} filtered</a>
-              } else {
-                <a class="nav-link" href={m.Config.Query().Add(llFilterKey, strconv.Itoa(verdict)).ToLink()}>
-                  No {data.LogVerdictToString(verdict)}</a>
-              }
-            </li>
-          }
-        </ul>
-      }
-      @Col(2) {
-        <div class="float-end">
-          {strconv.Itoa(m.TotalCount)} log entries<br/>
-          {strconv.Itoa(m.FilteredCount)} shown
-        </div>
-      }
-    }
-    @Row("logs") {
-      @Col(12) {
-        @LogListTable(m)
-      }
-    }
-  }
+	@Base(TopLevelLog, "Log list") {
+		@Row("refresh-and-count") {
+			@Col(3) {
+				if m.Config.AutoRefresh {
+					<a
+						class="btn btn-sm btn-primary"
+						href={ m.Config.Query().Add(llAutoRefreshKey, "false").ToLink() }
+					>Turn off autorefresh</a>
+					<div
+						hx-get={ m.Config.Query().ToLinkString() }
+						hx-trigger="every 1s"
+						hx-target="#container"
+						hx-select="#container"
+					></div>
+				} else {
+					<a
+						class="btn btn-sm btn-primary"
+						href={ m.Config.Query().Add(llAutoRefreshKey, "true").ToLink() }
+					>Turn on autorefresh</a>
+					<a class="btn btn-sm btn-primary" href={ m.Config.Query().ToLink() }>Refresh</a>
+				}
+			}
+			@Col(2) {
+				<form>
+					<input
+						class="form-text"
+						type="text"
+						name={ globalSearchKey }
+						hx-trigger="change, keyup delay:200ms changed"
+						hx-post={ m.Config.Query().ToLinkString() }
+						hx-select="#logs"
+						hx-swap="outerHTML"
+						hx-target="#logs"
+						value={ m.Config.Global.Search }
+						placeholder="Search for text"
+					/>
+				</form>
+			}
+			@Col(5) {
+				<ul class="nav nav-pills">
+					for verdict := range data.NumLogVerdicts {
+						<li class="nav-item">
+							if m.Config.Filter == verdict {
+								<a class="nav-link active bg-success-subtle" href={ m.Config.Query().ToLink() }>
+									{ data.LogVerdictToString(verdict) } filtered
+								</a>
+							} else {
+								<a class="nav-link" href={ m.Config.Query().Add(llFilterKey, strconv.Itoa(verdict)).ToLink() }>
+									No { data.LogVerdictToString(verdict) }
+								</a>
+							}
+						</li>
+					}
+				</ul>
+			}
+			@Col(2) {
+				<div class="float-end">
+					{ strconv.Itoa(m.TotalCount) } log entries
+					<br/>
+					{ strconv.Itoa(m.FilteredCount) } shown
+				</div>
+			}
+		}
+		@Row("logs") {
+			@Col(12) {
+				@LogListTable(m)
+			}
+		}
+	}
 }

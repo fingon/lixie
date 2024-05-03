@@ -6,215 +6,247 @@ import "fmt"
 import "strconv"
 
 templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
-  @Base(TopLevelLogRule, ruleTitle(rule)) {
-  <form action={logRuleEdit.URL()}>
-    <input type="hidden" name={idKey} value={ruleIDString(rule)} />
-    <input type="hidden" name={versionKey} value={strconv.Itoa(rule.Version)} />
-    @Row("done") {
-      @Col(1) {
-        @SaveSubmit("Save the changes", actionSave)
-        }
-      @Col(10)
-      if rule.ID > 0 {
-      @Col(1) {
-        @DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
-      }
-      }
-    }
-    @Row("state") {
-      @Col(2) {
-        <label for={hamKey} class="form-label">Ham</label>
-        <input class="btn btn-sm btn-secondary" type="checkbox" name={hamKey}
-               checked?={rule.Ham} value="Ham" />
-      }
-      @Col(2) {
-        <label for={disabledKey} class="form-label">Disabled</label>
-        <input class="btn btn-sm btn-secondary" type="checkbox" name={disabledKey}
-               checked?={rule.Disabled} value="Disabled" />
-        }
-      @Col(8) {
-        <label for={commentKey} class="form-label">Comment</label>
-        <input class="form-text" type="text" name={commentKey}
-               style="width:100%"
-               value={rule.Comment} placeholder="Comment, if any" />
-        }
-
-    }
-    for i, matcher := range rule.Matchers {
-      @Row(fmt.Sprintf("row-%d", i)) {
-        @Col(1) {
-          @DeleteSubmit("Delete the matcher", fieldID(i, deleteField))
-        }
-        @Col(2) {
-          <input class="form-text" type="text" name={fieldID(i, fieldField)}
-                 hx-trigger="change, keyup delay:200ms changed"
-                 hx-post={logRuleEdit.Path}
-                 hx-select="#logs"
-                 hx-swap="outerHTML"
-                 hx-target="#logs"
-                 value={matcher.Field} placeholder="Field name to match" />
-        }
-        @Col(1) {
-          <select name={fieldID(i, opField)}
-                  hx-post={logRuleEdit.Path}
-                  hx-select="#logs"
-                  hx-swap="outerHTML"
-                  hx-target="#logs"
-                  hx-trigger="change"
-                  >
-            <option value="=" selected?={matcher.Op=="="}>=</option>
-            <option value="=~" selected?={matcher.Op=="=~"}>=~</option>
-          </select>
-        }
-        @Col(8) {
-          <input class="form-text" type="text" name={fieldID(i, valueField)}
-                 hx-trigger="change, keyup delay:200ms changed"
-                 hx-post={logRuleEdit.Path}
-                 hx-select="#logs"
-                 hx-swap="outerHTML"
-                 hx-target="#logs"
-                 style="width:100%"
-                 value={matcher.Value} placeholder="Value of the operation" />
-        }
-      }
-    }
-    @Row("add") {
-      @Col(2) {
-        @AddSubmit("Add field", actionAdd)
-      }
-    }
-  </form>
-  if rules != nil {
-    <br />
-    @Row("overlapping-rules") {
-      @Col(12) {
-          if len(rules.LogRules) > 0 {
-            <h4>{strconv.Itoa(len(rules.LogRules))} conflicting rules:</h4>
-            @LogRuleListTable(*rules)
-        }
-      }
-    }
-  }
-  if logs != nil {
-    <br />
-    @Row("logs") {
-      @Col(12) {
-        if len(logs.Logs) > 0 {
-          <h4>{strconv.Itoa(logs.FilteredCount)} matching logs out of
-            {strconv.Itoa(logs.TotalCount)}:
-          </h4>
-          @LogListTable(*logs)
-        } else {
-          No matching logs.
-        }
-      }
-    }
-  }
-  }
+	@Base(TopLevelLogRule, ruleTitle(rule)) {
+		<form action={ logRuleEdit.URL() }>
+			<input type="hidden" name={ idKey } value={ ruleIDString(rule) }/>
+			<input type="hidden" name={ versionKey } value={ strconv.Itoa(rule.Version) }/>
+			@Row("done") {
+				@Col(1) {
+					@SaveSubmit("Save the changes", actionSave)
+				}
+				@Col(10)
+				if rule.ID > 0 {
+					@Col(1) {
+						@DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
+					}
+				}
+			}
+			@Row("state") {
+				@Col(2) {
+					<label for={ hamKey } class="form-label">Ham</label>
+					<input
+						class="btn btn-sm btn-secondary"
+						type="checkbox"
+						name={ hamKey }
+						checked?={ rule.Ham }
+						value="Ham"
+					/>
+				}
+				@Col(2) {
+					<label for={ disabledKey } class="form-label">Disabled</label>
+					<input
+						class="btn btn-sm btn-secondary"
+						type="checkbox"
+						name={ disabledKey }
+						checked?={ rule.Disabled }
+						value="Disabled"
+					/>
+				}
+				@Col(8) {
+					<label for={ commentKey } class="form-label">Comment</label>
+					<input
+						class="form-text"
+						type="text"
+						name={ commentKey }
+						style="width:100%"
+						value={ rule.Comment }
+						placeholder="Comment, if any"
+					/>
+				}
+			}
+			for i, matcher := range rule.Matchers {
+				@Row(fmt.Sprintf("row-%d", i)) {
+					@Col(1) {
+						@DeleteSubmit("Delete the matcher", fieldID(i, deleteField))
+					}
+					@Col(2) {
+						<input
+							class="form-text"
+							type="text"
+							name={ fieldID(i, fieldField) }
+							hx-trigger="change, keyup delay:200ms changed"
+							hx-post={ logRuleEdit.Path }
+							hx-select="#logs"
+							hx-swap="outerHTML"
+							hx-target="#logs"
+							value={ matcher.Field }
+							placeholder="Field name to match"
+						/>
+					}
+					@Col(1) {
+						<select
+							name={ fieldID(i, opField) }
+							hx-post={ logRuleEdit.Path }
+							hx-select="#logs"
+							hx-swap="outerHTML"
+							hx-target="#logs"
+							hx-trigger="change"
+						>
+							<option value="=" selected?={ matcher.Op=="=" }>=</option>
+							<option value="=~" selected?={ matcher.Op=="=~" }>=~</option>
+						</select>
+					}
+					@Col(8) {
+						<input
+							class="form-text"
+							type="text"
+							name={ fieldID(i, valueField) }
+							hx-trigger="change, keyup delay:200ms changed"
+							hx-post={ logRuleEdit.Path }
+							hx-select="#logs"
+							hx-swap="outerHTML"
+							hx-target="#logs"
+							style="width:100%"
+							value={ matcher.Value }
+							placeholder="Value of the operation"
+						/>
+					}
+				}
+			}
+			@Row("add") {
+				@Col(2) {
+					@AddSubmit("Add field", actionAdd)
+				}
+			}
+		</form>
+		if rules != nil {
+			<br/>
+			@Row("overlapping-rules") {
+				@Col(12) {
+					if len(rules.LogRules) > 0 {
+						<h4>{ strconv.Itoa(len(rules.LogRules)) } conflicting rules:</h4>
+						@LogRuleListTable(*rules)
+					}
+				}
+			}
+		}
+		if logs != nil {
+			<br/>
+			@Row("logs") {
+				@Col(12) {
+					if len(logs.Logs) > 0 {
+						<h4>
+							{ strconv.Itoa(logs.FilteredCount) } matching logs out of
+							{ strconv.Itoa(logs.TotalCount) }:
+						</h4>
+						@LogListTable(*logs)
+					} else {
+						No matching logs.
+					}
+				}
+			}
+		}
+	}
 }
 
 templ LogRuleMatchersTable(rule data.LogRule) {
-  <table class="table table-hover">
-    <tbody>
-      for _, matcher := range rule.Matchers {
-        <tr>
-          <td style="width:10%">{matcher.Field}</td>
-          <td style="width:10em">{matcher.Op}</td>
-          <td><div class="float-end">{matcher.Value}</div></td>
-        </tr>
-      }
-    </tbody>
-  </table>
+	<table class="table table-hover">
+		<tbody>
+			for _, matcher := range rule.Matchers {
+				<tr>
+					<td style="width:10%">{ matcher.Field }</td>
+					<td style="width:10em">{ matcher.Op }</td>
+					<td><div class="float-end">{ matcher.Value }</div></td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
-
 templ LogRuleListTable(m LogRuleListModel) {
-  <table class="table table-hover">
-    <thead>
-      <th scope="col">
-        #<i class="bi bi-arrow-down"></i>
-      </th>
-      <th scope="col">State</th>
-      if m.DB != nil {
-      <th scope="col">Matches</th>
-      }
-      <th scope="col">Matchers</th>
-      <th scope="col">Comment</th>
-    </thead>
-    <tbody>
-      for _, rule := range m.LogRules {
-        <tr class="logrule">
-          <th scope="row">
-            {strconv.Itoa(rule.ID)}
-          </th>
-          <td scope="row">
-            v{strconv.Itoa(rule.Version)}
-            if rule.Disabled {
-              Disabled
-            } else {
-              Enabled
-            }
-            if rule.Ham {
-              Ham
-            } else {
-              Spam
-            }
-            <br/>
-            @EditButton("Edit the rule", ruleLink(rule.ID, "edit"))
-            @DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
-          </td>
-          if m.DB != nil {
-          <td>
-            {strconv.Itoa(m.DB.RuleCount(rule.ID))}
-          </td>
-          }
-          <td class="table-primary">
-            @LogRuleMatchersTable(*rule)
-          </td>
-          <td>
-            {rule.Comment}
-          </td>
-        </tr>
-      }
-      if m.HasMore {
-      <tr class="logrule">
-        <td colspan="5">
-          <span hx-target="closest tr"
-                hx-trigger="revealed"
-                hx-swap="outerHTML"
-                hx-select="tr.logrule"
-                hx-get={m.NextLinkString()}>
-            Loading More...
-          </span>
-        </td>
-      </tr>
-      }
-    </tbody>
-  </table>
+	<table class="table table-hover">
+		<thead>
+			<th scope="col">
+				#<i class="bi bi-arrow-down"></i>
+			</th>
+			<th scope="col">State</th>
+			if m.DB != nil {
+				<th scope="col">Matches</th>
+			}
+			<th scope="col">Matchers</th>
+			<th scope="col">Comment</th>
+		</thead>
+		<tbody>
+			for _, rule := range m.LogRules {
+				<tr class="logrule">
+					<th scope="row">
+						{ strconv.Itoa(rule.ID) }
+					</th>
+					<td scope="row">
+						v{ strconv.Itoa(rule.Version) }
+						if rule.Disabled {
+							Disabled
+						} else {
+							Enabled
+						}
+						if rule.Ham {
+							Ham
+						} else {
+							Spam
+						}
+						<br/>
+						@EditButton("Edit the rule", ruleLink(rule.ID, "edit"))
+						@DeleteButton("Delete the rule", ruleLink(rule.ID, "delete"))
+					</td>
+					if m.DB != nil {
+						<td>
+							{ strconv.Itoa(m.DB.RuleCount(rule.ID)) }
+						</td>
+					}
+					<td class="table-primary">
+						@LogRuleMatchersTable(*rule)
+					</td>
+					<td>
+						{ rule.Comment }
+					</td>
+				</tr>
+			}
+			if m.HasMore {
+				<tr class="logrule">
+					<td colspan="5">
+						<span
+							hx-target="closest tr"
+							hx-trigger="revealed"
+							hx-swap="outerHTML"
+							hx-select="tr.logrule"
+							hx-get={ m.NextLinkString() }
+						>
+							Loading More...
+						</span>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
 templ LogRuleList(m LogRuleListModel) {
-  @Base(TopLevelLogRule, "Log rule list") {
-    @Row("rule-add") {
-      @Col(3) {
-        @AddButton("Add a new rule", logRuleEdit.URL())
-      }
-      @Col(2) {
-        <form>
-          <input class="form-text" type="text" name={globalSearchKey}
-                 hx-trigger="change, keyup delay:200ms changed"
-                 hx-post={m.Config.ToLinkString()}
-                 hx-select="#rules"
-                 hx-swap="outerHTML"
-                 hx-target="#rules"
-                 value={m.Config.Global.Search} placeholder="Search for text" />
-        </form>
-      }
-    }
-    @Row("rules") {
-      @Col(12) {
-        @LogRuleListTable(m)
-      }
-    }
-  }
+	@Base(TopLevelLogRule, "Log rule list") {
+		@Row("rule-add") {
+			@Col(3) {
+				@AddButton("Add a new rule", logRuleEdit.URL())
+			}
+			@Col(2) {
+				<form>
+					<input
+						class="form-text"
+						type="text"
+						name={ globalSearchKey }
+						hx-trigger="change, keyup delay:200ms changed"
+						hx-post={ m.Config.ToLinkString() }
+						hx-select="#rules"
+						hx-swap="outerHTML"
+						hx-target="#rules"
+						value={ m.Config.Global.Search }
+						placeholder="Search for text"
+					/>
+				</form>
+			}
+		}
+		@Row("rules") {
+			@Col(12) {
+				@LogRuleListTable(m)
+			}
+		}
+	}
 }
