@@ -49,8 +49,6 @@ local Lixie instance which probably does not exist.
 
 - add error messages if log retrieval fails
 
-- fix fts to update counters too
-
 ## Big features
 
 - Optimize rule evaluation (it could be also used when generating rules for

@@ -111,6 +111,9 @@ type LogListModel struct {
 	DisableActions    bool
 	DisablePagination bool
 
+	// Is this post request (.. sigh ..)
+	Post bool
+
 	// Convenience results from filter()
 	EnableAccurateCounting bool
 	FilteredCount          int
@@ -177,7 +180,7 @@ func logListHandler(db *data.Database) http.Handler {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		model := LogListModel{Config: config, DB: db, Limit: 20}
+		model := LogListModel{Config: config, DB: db, Limit: 20, Post: r.Method == "POST"}
 		model.Filter()
 		err = LogList(model).Render(r.Context(), w)
 		if err != nil {

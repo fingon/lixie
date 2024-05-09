@@ -157,7 +157,13 @@ templ LogList(m LogListModel) {
 				</ul>
 			}
 			@Col(2) {
-				<div class="float-end">
+				<div
+					class="float-end"
+					id="counts"
+					if m.Post {
+						hx-swap-oob="counts"
+					}
+				>
 					{ strconv.Itoa(m.TotalCount) } log entries
 					<br/>
 					{ strconv.Itoa(m.FilteredCount) } shown

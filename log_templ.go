@@ -678,14 +678,24 @@ func LogList(m LogListModel) templ.Component {
 						templ_7745c5c3_Buffer = templ.GetBuffer()
 						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"float-end\">")
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"float-end\" id=\"counts\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if m.Post {
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" hx-swap-oob=\"counts\"")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var43 string
 					templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(m.TotalCount))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `log.templ`, Line: 161, Col: 33}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `log.templ`, Line: 165, Col: 33}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 					if templ_7745c5c3_Err != nil {
@@ -698,7 +708,7 @@ func LogList(m LogListModel) templ.Component {
 					var templ_7745c5c3_Var44 string
 					templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(m.FilteredCount))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `log.templ`, Line: 163, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `log.templ`, Line: 167, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 					if templ_7745c5c3_Err != nil {
