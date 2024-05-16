@@ -20,7 +20,7 @@ fmt:
 	templ fmt .
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
-	go test ./...
+	go test ./... -race -covermode=atomic -coverprofile=coverage.out
 	go build .
 
 .PHONY: clean
