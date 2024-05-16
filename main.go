@@ -14,8 +14,12 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/a-h/templ"
@@ -36,20 +40,50 @@ func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 	return db
 }
 
+func newMux(db *data.Database) http.Handler {
+	mux := http.NewServeMux()
+
+	// Configure the routes
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Other options: StatusMovedPermanently, StatusFound
+	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
+	// })
+	mux.HandleFunc("/", http.NotFound)
+	mainHandler := templ.Handler(MainPage(db))
+	mux.Handle("/{$}", mainHandler)
+
+	mux.Handle(topLevelLog.PathMatcher(), logListHandler(db))
+	mux.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(db, true))
+	mux.Handle(topLevelLog.Path+"/{hash}/spam", logClassifyHandler(db, false))
+
+	mux.Handle(topLevelLogRule.PathMatcher(), logRuleListHandler(db))
+	mux.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(db))
+	mux.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
+	mux.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
+
+	// Static content
+	staticFS, err := fs.Sub(embedContent, "static")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
+	return mux
+}
+
+// Most of this function is based on
+// https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/
+//
 // These might be also useful at some point
 //
 //	getenv func(string) string,
 //	stdin  io.Reader,
 //	stdout, stderr io.Writer,
 func run(
-	_ context.Context,
+	ctx context.Context,
 	args []string) error {
-	// This would be relevant only if we handled our own context.
-	// However, http.ListenAndServe catches os.Interrupt so this
-	// is not necessary:
-	//
-	// ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	// defer cancel()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	defer cancel()
 
 	// CLI
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
@@ -63,40 +97,37 @@ func run(
 		return err
 	}
 
-	// Static content
-	staticFS, err := fs.Sub(embedContent, "static")
-	if err != nil {
-		log.Panic(err)
-	}
-
 	config := data.DatabaseConfig{LokiServer: *lokiServer,
 		LokiSelector: *lokiSelector}
 	db := setupDatabase(config, *dbPath)
 
-	// Configure the routes
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// Other options: StatusMovedPermanently, StatusFound
-	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
-	// })
-	http.HandleFunc("/", http.NotFound)
-	mainHandler := templ.Handler(MainPage(db))
-	http.Handle("/{$}", mainHandler)
-
-	http.Handle(topLevelLog.PathMatcher(), logListHandler(db))
-	http.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(db, true))
-	http.Handle(topLevelLog.Path+"/{hash}/spam", logClassifyHandler(db, false))
-
-	http.Handle(topLevelLogRule.PathMatcher(), logRuleListHandler(db))
-	http.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(db))
-	http.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
-	http.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
-
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
+	mux := newMux(db)
 
 	// Start the actual server
-	endpoint := fmt.Sprintf("%s:%d", *address, *port)
-	fmt.Printf("Listening on %s\n", endpoint)
-	return http.ListenAndServe(endpoint, nil)
+	httpServer := &http.Server{
+		Addr:    net.JoinHostPort(*address, strconv.Itoa(*port)),
+		Handler: mux,
+	}
+	go func() {
+		log.Printf("listening on %s\n", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Fprintf(os.Stderr, "error listening: %v", err)
+		}
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			fmt.Fprintf(os.Stderr, "error shutting down http server: %s\n", err)
+		}
+	}()
+	wg.Wait()
+	return nil
 }
 
 func main() {
