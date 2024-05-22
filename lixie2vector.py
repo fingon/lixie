@@ -92,6 +92,9 @@ def dump_rule_matchers_ignoring_source(rule):
     if not prefix:
         yield "true"
 
+def dump_rule_verdict(rule):
+    verdict = "ham" if rule["Ham"] else "spam"
+    yield f'.lixie = "{verdict}"'
 
 def dump_rules_ignoring_source(chunk):
     assert chunk
@@ -100,8 +103,7 @@ def dump_rules_ignoring_source(chunk):
         yield f"{elseprefix}if ("
         yield from dump_rule_matchers_ignoring_source(rule)
         yield ") {"
-        verdict = "ham" if rule["Ham"] else "spam"
-        yield f'.lixie = "{verdict}"'
+        yield from dump_rule_verdict(rule)
     yield "}"
 
 
@@ -125,13 +127,44 @@ def dump_source_rules_rec(value2rules_list, stofs, endofs):
         yield from dump_rules_ignoring_source(chunk)
     yield "}"
 
+def split_by_source_op(rules):
+    eq_rules = []
+    re_rules = []
+    for rule in rules:
+        matcher = get_source_matcher(rule)
+        match op := matcher["Op"]:
+            case "=":
+                eq_rules.append(rule)
+            case "=~":
+                re_rules.append(rule)
+            case _:
+                raise NotImplementedError(op)
+    return eq_rules, re_rules
+
 
 def dump_rules(rules):
-    # TODO: should the field be configurable?
     yield '.lixie = "unknown"'
+
+    # TODO: should the field be configurable?
     yield "source = string!(.source)"
     dumped = set()
-    for source_op, chunk in split_by_source_expr(rules):
+    eq_rules, re_rules = split_by_source_op(rules)
+    for rule in re_rules:
+        # Regexp rules are not even mutually exclusive (or at least,
+        # we do not ensure they are), so we dump them one by
+        # one. Hopefully vector performs anyway.
+        matcher = get_source_matcher(rule)
+        value = matcher["Value"]
+        yield "if ("
+        # NB: Insert regexp match last, exact matches would be cheaper
+        yield from dump_rule_matchers_ignoring_source(rule)
+        yield f"&& (parse_regex(source, r'^{value}$') ?? null) != null)"
+        yield "{"
+        yield from dump_rule_verdict(rule)
+        yield "}"
+
+
+    for source_op, chunk in split_by_source_expr(eq_rules):
         # TODO: Implement regexp support here
         assert source_op == "="
         value2rules = {}
