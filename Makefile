@@ -7,6 +7,7 @@
 BINARY=lixie
 TEMPLATES = $(wildcard *.templ)
 GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
+TEMPL_VERSION = $(shell grep a-h/templ go.mod | sed 's/^.* v/v/')
 
 all: build lint
 
@@ -29,7 +30,7 @@ clean:
 
 .PHONY:
 dep:
-	go install github.com/a-h/templ/cmd/templ@latest
+	go install github.com/a-h/templ/cmd/templ@$(TEMPL_VERSION)
 
 .PHONY: serve
 serve:
