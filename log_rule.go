@@ -16,6 +16,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
+	"github.com/sourcegraph/conc/iter"
 )
 
 // top-level form fields
@@ -98,19 +99,19 @@ func findMatchingOtherRules(db *data.Database, logs []*data.Log, skipRule *data.
 	// We could also check for strict supersets (but regexp+regexp
 	// matching is tricky). So we just show rules that out of the
 	// box seem to overlap as they match the same rules.
-	rules := []*data.LogRule{}
-
-	for _, rule := range db.LogRules {
+	rules := iter.Map(db.LogRules, func(rulep **data.LogRule) *data.LogRule {
+		rule := *rulep
 		if rule == skipRule {
-			continue
+			return nil
 		}
 		for _, log := range logs {
 			if data.LogMatchesRule(log, rule) {
-				rules = append(rules, rule)
-				break
+				return rule
 			}
 		}
-	}
+		return nil
+	})
+	rules = FilterSparse(rules, IsNotNil)
 	if len(rules) > 0 {
 		return &LogRuleListModel{LogRules: rules}
 	}

@@ -20,6 +20,8 @@ import (
 	"slices"
 	"strconv"
 	"sync"
+
+	"github.com/sourcegraph/conc/iter"
 )
 
 type DatabaseConfig struct {
@@ -260,8 +262,9 @@ func (self *Database) addLogsToCounts(logs []*Log) {
 	if r2c == nil {
 		return
 	}
-	for _, log := range logs {
-		rule := self.LogToRule(log)
+	for _, rule := range iter.Map(logs, func(logp **Log) *LogRule {
+		return self.LogToRule(*logp)
+	}) {
 		if rule != nil {
 			r2c[rule.ID]++
 		}
