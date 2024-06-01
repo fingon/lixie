@@ -33,9 +33,15 @@ dep:
 	go install github.com/a-h/templ/cmd/templ@$(TEMPL_VERSION)
 
 .PHONY: serve
-serve:
-	templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
+serve: run
+	watchman-make -p '**/*.go' '**/*.templ' -t run
+# templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
+# ^ sometimes bugs, which is unfortunate
 
+.PHONY: run
+run: $(BINARY)
+	killall -9 -q lixie && sleep 1 || true
+	./lixie &
 
 %_templ.go: %.templ
 	templ generate -f $<
