@@ -99,7 +99,11 @@ func findMatchingOtherRules(db *data.Database, logs []*data.Log, skipRule *data.
 	// We could also check for strict supersets (but regexp+regexp
 	// matching is tricky). So we just show rules that out of the
 	// box seem to overlap as they match the same rules.
-	rules := iter.Map(db.LogRules, func(rulep **data.LogRule) *data.LogRule {
+	lrules := db.LogRules
+	if lrules == nil {
+		return nil
+	}
+	rules := iter.Map(lrules.Rules, func(rulep **data.LogRule) *data.LogRule {
 		rule := *rulep
 		if rule == skipRule {
 			return nil
@@ -126,16 +130,17 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 			return
 		}
 		if r.FormValue(actionSave) != "" {
+			nrules := slices.Clone(db.LogRules.Rules)
 			// Look for existing rule first
-			for i, v := range db.LogRules {
+			for i, v := range nrules {
 				if v.ID != rule.ID {
 					continue
 				}
 				// TODO do we want to error if version differs?
 				if v.Version == rule.Version {
 					rule.Version++
-					db.LogRules[i] = rule
-					err = db.Save()
+					nrules[i] = rule
+					err = db.Save(nrules)
 					if err != nil {
 						http.Error(w, err.Error(), 500)
 						return
@@ -190,7 +195,7 @@ func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 			// TODO handle error
 			return
 		}
-		for _, rule := range db.LogRules {
+		for _, rule := range db.LogRules.Rules {
 			if rule.ID == rid {
 				logs := findMatchingLogs(db, rule)
 				rules := findMatchingOtherRules(db, logs.Logs, rule)

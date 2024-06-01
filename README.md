@@ -49,6 +49,13 @@ local Lixie instance which probably does not exist.
 
 - add error messages if log retrieval fails
 
+- add better overlapping rule detection
+
+  - with large number of rules, it is really hard to see where things
+    are (and I apparently reversed the rule priority at some point
+    without realizing it or perhaps I am just failing at understanding
+    it now)
+
 ## Big features
 
 - Optimize rule evaluation (it could be also used when generating rules for

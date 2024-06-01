@@ -50,10 +50,10 @@ func (self *Log) MatchesFTS(search string) bool {
 	return strings.Contains(self.RawMessage, search)
 }
 
-func (self *Log) ToRule(rulesVersion int, rules []*LogRule) *LogRule {
-	if self.rulesVersion != rulesVersion {
-		self.rule = LogToRule(self, rules)
-		self.rulesVersion = rulesVersion
+func (self *Log) ToRule(rules *LogRules) *LogRule {
+	if self.rulesVersion != rules.Version {
+		self.rule = LogToRule(self, rules.Reversed)
+		self.rulesVersion = rules.Version
 	}
 	return self.rule
 }

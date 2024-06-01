@@ -127,8 +127,9 @@ func (self *LogListModel) LogToRule(log *data.Log) *data.LogRule {
 	if self.LogRules != nil {
 		return data.LogToRule(log, self.LogRules)
 	}
-	return self.DB.LogToRule(log)
+	return log.ToRule(self.DB.LogRules)
 }
+
 func (self *LogListModel) LogVerdict(log *data.Log) int {
 	rule := self.LogToRule(log)
 	return data.LogRuleToVerdict(rule)

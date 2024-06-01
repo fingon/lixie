@@ -93,9 +93,7 @@ func logRuleListHandler(db *data.Database) http.Handler {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-
-		rules := db.LogRulesReversed()
-		m := LogRuleListModel{Config: config, DB: db, LogRules: rules, Limit: 10}
+		m := LogRuleListModel{Config: config, DB: db, LogRules: db.LogRules.Reversed, Limit: 10}
 		m.Filter()
 		err = LogRuleList(m).Render(r.Context(), w)
 		if err != nil {

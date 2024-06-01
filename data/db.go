@@ -29,17 +29,23 @@ type DatabaseConfig struct {
 	LokiSelector string
 }
 
+type LogRules struct {
+	Rules   []*LogRule
+	Version int
+
+	// Reversed rules - these are always available if Rules are
+	Reversed []*LogRule `json:"-"`
+
+	// Internal tracking of rule matches to log lines
+	rid2Count map[int]int
+}
+
 type Database struct {
 	config DatabaseConfig
 
-	// TODO: There should be really locking here too;
+	// TODO: There should be really locking here too?
 	// log fetching is probably the more common thing though
-	LogRules     []*LogRule
-	rulesVersion int
-	rid2Count    map[int]int
-
-	// Internal caching of reversed log rules (that are shown to the user)
-	logRulesReversed []*LogRule
+	LogRules *LogRules
 
 	// Log caching
 	logLock sync.Mutex
@@ -55,29 +61,24 @@ type Database struct {
 var ErrHashNotFound = errors.New("specified hash not found")
 var ErrRuleNotFound = errors.New("specified rule not found")
 
-func (self *Database) LogRulesReversed() []*LogRule {
-	if self.logRulesReversed == nil {
-		count := len(self.LogRules)
-		reversed := make([]*LogRule, count)
-		for k, v := range self.LogRules {
-			reversed[count-k-1] = v
-		}
-		self.logRulesReversed = reversed
+func NewLogRules(rules []*LogRule, version int) *LogRules {
+	count := len(rules)
+	reversed := make([]*LogRule, count)
+	for k, v := range rules {
+		reversed[count-k-1] = v
 	}
-	return self.logRulesReversed
+	return &LogRules{Rules: rules, Reversed: reversed, Version: version}
 }
 
 func (self *Database) Add(r LogRule) error {
 	r.ID = self.nextLogRuleID()
-	self.LogRules = append(self.LogRules, &r)
-	return self.Save()
+	return self.Save(append(slices.Clone(self.LogRules.Rules), &r))
 }
 
 func (self *Database) Delete(rid int) error {
-	for i, v := range self.LogRules {
+	for i, v := range self.LogRules.Rules {
 		if v.ID == rid {
-			self.LogRules = slices.Delete(self.LogRules, i, i+1)
-			return self.Save()
+			return self.Save(slices.Delete(slices.Clone(self.LogRules.Rules), i, i+1))
 		}
 	}
 	return ErrRuleNotFound
@@ -87,7 +88,7 @@ func (self *Database) nextLogRuleID() int {
 	id := self.nextID
 	if id == 0 {
 		id = 1 // Start at 1 even with empty database
-		for _, v := range self.LogRules {
+		for _, v := range self.LogRules.Rules {
 			if v.ID >= id {
 				id = v.ID + 1
 			}
@@ -219,10 +220,8 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 	return self.Add(rule)
 }
 
-func (self *Database) Save() error {
-	self.logRulesReversed = nil
-	self.rulesVersion++
-	self.rid2Count = nil
+func (self *Database) Save(rules []*LogRule) error {
+	lrules := NewLogRules(rules, self.LogRules.Version+1)
 
 	b, err := json.Marshal(self)
 	if err != nil {
@@ -249,21 +248,18 @@ func (self *Database) Save() error {
 		return err
 	}
 	defer f.Close()
+	self.LogRules = lrules
 	return nil
 }
 
-func (self *Database) LogToRule(log *Log) *LogRule {
-	// TODO: Does the locking here matter?
-	return log.ToRule(self.rulesVersion, self.LogRulesReversed())
-}
-
 func (self *Database) addLogsToCounts(logs []*Log) {
-	r2c := self.rid2Count
+	lrules := self.LogRules
+	r2c := lrules.rid2Count
 	if r2c == nil {
 		return
 	}
 	for _, rule := range iter.Map(logs, func(logp **Log) *LogRule {
-		return self.LogToRule(*logp)
+		return (*logp).ToRule(lrules)
 	}) {
 		if rule != nil {
 			r2c[rule.ID]++
@@ -280,26 +276,35 @@ func (self *Database) RuleCount(rid int) int {
 		self.updateLogsWithLock()
 	}
 
-	if self.rid2Count == nil {
-		r2c := make(map[int]int, len(self.LogRules))
-		for _, rule := range self.LogRules {
+	lrules := self.LogRules
+
+	if lrules.rid2Count == nil {
+		r2c := make(map[int]int, len(lrules.Rules))
+		for _, rule := range lrules.Rules {
 			r2c[rule.ID] = 0
 		}
-		self.rid2Count = r2c
+		lrules.rid2Count = r2c
 		self.addLogsToCounts(self.logs)
 	}
-	return self.rid2Count[rid]
+	return lrules.rid2Count[rid]
 }
 
 func NewDatabaseFromFile(config DatabaseConfig, path string) (db *Database, err error) {
-	db = &Database{config: config, path: path, rulesVersion: 1}
+	db = &Database{config: config, path: path, LogRules: &LogRules{}}
 	f, err := os.Open(path)
 	if err != nil {
 		return
 	}
 	data, err := io.ReadAll(f)
-	if err == nil {
-		err = json.Unmarshal(data, db)
+	if err != nil {
+		return
 	}
+
+	err = json.Unmarshal(data, db)
+	if err != nil {
+		return
+	}
+	// Recreate to have also reverse slice
+	db.LogRules = NewLogRules(db.LogRules.Rules, db.LogRules.Version)
 	return
 }

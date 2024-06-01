@@ -28,7 +28,7 @@ templ MainPage(db *data.Database) {
 				Log rules:
 			}
 			@Col(4) {
-				{ strconv.Itoa(len(db.LogRules)) }
+				{ strconv.Itoa(len(db.LogRules.Rules)) }
 			}
 		}
 		@Row("") {
