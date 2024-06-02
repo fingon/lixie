@@ -3,7 +3,37 @@ package main
 
 import "fmt"
 
-templ Base(toplevel int, title string) {
+// If configured in State, this will reload the page if the reported
+// version of the server differs from what is in this code.
+templ Reloader(st State) {
+	if st.RefreshIntervalMs > 0 {
+		@templ.JSONScript("buildTimestamp", st.BuildTimestamp)
+		@templ.JSONScript("refreshInterval", st.RefreshIntervalMs)
+		<script>
+        let buildTimestamp = JSON.parse(document.getElementById('buildTimestamp').textContent);
+        let refreshInterval = JSON.parse(document.getElementById('refreshInterval').textContent)
+
+        function checkVersion() {
+            fetch('/version?simple=1')
+                .then(response => response.text())
+                .then(timestamp => {
+                    if (timestamp !== buildTimestamp) {
+                        // Reload the page
+                        console.log(`Timestamp changed: ${timestamp} <> ${buildTimestamp}`);
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking version:', error);
+                });
+        }
+
+        setInterval(checkVersion, refreshInterval);
+    </script>
+	}
+}
+
+templ Base(st State, toplevel int, title string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -74,6 +104,7 @@ templ Base(toplevel int, title string) {
       </style>
 		</head>
 		<body hx-boost="true" hx-indicator=".loading-bar">
+			@Reloader(st)
 			<div class="container-fluid" id="container">
 				<div class="row bg-success-subtle position-relative" id="top" style="padding-left:0;padding-right:0">
 					@Col(2) {

@@ -167,7 +167,7 @@ func (self *LogListModel) Filter() {
 	self.FilteredCount = count
 }
 
-func logListHandler(db *data.Database) http.Handler {
+func logListHandler(st State) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		config := LogListConfig{Filter: data.LogVerdictSpam}
 		wr, err := cm.GetWrapper(r)
@@ -181,9 +181,9 @@ func logListHandler(db *data.Database) http.Handler {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		model := LogListModel{Config: config, DB: db, Limit: 20, Post: r.Method == "POST"}
+		model := LogListModel{Config: config, DB: st.DB, Limit: 20, Post: r.Method == "POST"}
 		model.Filter()
-		err = LogList(model).Render(r.Context(), w)
+		err = LogList(st, model).Render(r.Context(), w)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 		}

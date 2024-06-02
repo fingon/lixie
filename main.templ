@@ -3,10 +3,9 @@ package main
 
 import "time"
 import "strconv"
-import "github.com/fingon/lixie/data"
 
-templ MainPage(db *data.Database) {
-	@Base(TopLevelMain, "Lixie") {
+templ MainPage(st State) {
+	@Base(st, TopLevelMain, "Lixie") {
 		@Row("") {
 			@Col(2) {
 				Start time:
@@ -28,7 +27,7 @@ templ MainPage(db *data.Database) {
 				Log rules:
 			}
 			@Col(4) {
-				{ strconv.Itoa(len(db.LogRules.Rules)) }
+				{ strconv.Itoa(len(st.DB.LogRules.Rules)) }
 			}
 		}
 		@Row("") {
@@ -36,7 +35,7 @@ templ MainPage(db *data.Database) {
 				Log lines:
 			}
 			@Col(4) {
-				{ strconv.Itoa(len(db.Logs())) }
+				{ strconv.Itoa(len(st.DB.Logs())) }
 			}
 		}
 	}

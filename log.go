@@ -29,7 +29,7 @@ func toJSON(v interface{}) string {
 	return string(b)
 }
 
-func logClassifyHandler(db *data.Database, ham bool) http.Handler {
+func logClassifyHandler(st State, ham bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hashString := r.PathValue("hash")
 		hash, err := strconv.ParseUint(hashString, 10, 64)
@@ -37,7 +37,7 @@ func logClassifyHandler(db *data.Database, ham bool) http.Handler {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		err = db.ClassifyHash(hash, ham)
+		err = st.DB.ClassifyHash(hash, ham)
 		if err == data.ErrHashNotFound {
 			http.NotFound(w, r)
 			return

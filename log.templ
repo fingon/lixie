@@ -100,8 +100,8 @@ templ LogListTable(m LogListModel) {
 	</table>
 }
 
-templ LogList(m LogListModel) {
-	@Base(TopLevelLog, "Log list") {
+templ LogList(st State, m LogListModel) {
+	@Base(st, TopLevelLog, "Log list") {
 		@Row("refresh-and-count") {
 			@Col(3) {
 				if m.Config.AutoRefresh {

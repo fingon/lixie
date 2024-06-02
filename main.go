@@ -26,6 +26,9 @@ import (
 	"github.com/fingon/lixie/data"
 )
 
+// This is set from Makefile, which is .. ugly, and somewhat awkward
+var ldBuildTimestamp = "not set"
+
 var boot = time.Now()
 
 // Note: While we don't have any static, double comment = static/ will be empty
@@ -40,7 +43,7 @@ func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 	return db
 }
 
-func newMux(db *data.Database) http.Handler {
+func newMux(st State) http.Handler {
 	mux := http.NewServeMux()
 
 	// Configure the routes
@@ -49,18 +52,18 @@ func newMux(db *data.Database) http.Handler {
 	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
 	// })
 	mux.HandleFunc("/", http.NotFound)
-	mainHandler := templ.Handler(MainPage(db))
+	mainHandler := templ.Handler(MainPage(st))
 	mux.Handle("/{$}", mainHandler)
 
-	mux.Handle(topLevelLog.PathMatcher(), logListHandler(db))
-	mux.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(db, true))
-	mux.Handle(topLevelLog.Path+"/{hash}/spam", logClassifyHandler(db, false))
+	mux.Handle(topLevelLog.PathMatcher(), logListHandler(st))
+	mux.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(st, true))
+	mux.Handle(topLevelLog.Path+"/{hash}/spam", logClassifyHandler(st, false))
 
-	mux.Handle(topLevelLogRule.PathMatcher(), logRuleListHandler(db))
-	mux.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(db))
-	mux.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
-	mux.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
-	mux.Handle("/version", versionHandler())
+	mux.Handle(topLevelLogRule.PathMatcher(), logRuleListHandler(st))
+	mux.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(st))
+	mux.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(st))
+	mux.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(st))
+	mux.Handle("/version", versionHandler(st))
 
 	// Static content
 	staticFS, err := fs.Sub(embedContent, "static")
@@ -92,6 +95,7 @@ func run(
 	lokiServer := flags.String("loki-server", "https://fw.fingon.iki.fi:3100", "Address of the Loki server")
 	lokiSelector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
 	dbPath := flags.String("db", "db.json", "Database to use")
+	dev := flags.Bool("dev", false, "Enable development mode")
 
 	port := flags.Int("port", 8080, "Port number to listen at")
 	if err := flags.Parse(args[1:]); err != nil {
@@ -102,7 +106,12 @@ func run(
 		LokiSelector: *lokiSelector}
 	db := setupDatabase(config, *dbPath)
 
-	mux := newMux(db)
+	state := State{DB: db, BuildTimestamp: ldBuildTimestamp}
+	if *dev {
+		state.RefreshIntervalMs = 1000
+	}
+
+	mux := newMux(state)
 
 	// Start the actual server
 	httpServer := &http.Server{

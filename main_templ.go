@@ -14,9 +14,8 @@ import "bytes"
 
 import "time"
 import "strconv"
-import "github.com/fingon/lixie/data"
 
-func MainPage(db *data.Database) templ.Component {
+func MainPage(st State) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -73,7 +72,7 @@ func MainPage(db *data.Database) templ.Component {
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(boot.Format(time.DateTime))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 15, Col: 32}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 14, Col: 32}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -139,7 +138,7 @@ func MainPage(db *data.Database) templ.Component {
 					var templ_7745c5c3_Var10 string
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Sub(boot).String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 23, Col: 35}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 22, Col: 35}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -203,9 +202,9 @@ func MainPage(db *data.Database) templ.Component {
 						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 					}
 					var templ_7745c5c3_Var14 string
-					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(db.LogRules.Rules)))
+					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(st.DB.LogRules.Rules)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 31, Col: 42}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 30, Col: 45}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
@@ -269,9 +268,9 @@ func MainPage(db *data.Database) templ.Component {
 						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 					}
 					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(db.Logs())))
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(st.DB.Logs())))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 39, Col: 34}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `main.templ`, Line: 38, Col: 37}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
@@ -300,7 +299,7 @@ func MainPage(db *data.Database) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = Base(TopLevelMain, "Lixie").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base(st, TopLevelMain, "Lixie").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -16,7 +16,7 @@ import "github.com/fingon/lixie/data"
 import "fmt"
 import "strconv"
 
-func LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) templ.Component {
+func LogRuleEdit(st State, rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -770,7 +770,7 @@ func LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel)
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = Base(TopLevelLogRule, ruleTitle(rule)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base(st, TopLevelLogRule, ruleTitle(rule)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1025,7 +1025,7 @@ func LogRuleListTable(m LogRuleListModel) templ.Component {
 	})
 }
 
-func LogRuleList(m LogRuleListModel) templ.Component {
+func LogRuleList(st State, m LogRuleListModel) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -1183,7 +1183,7 @@ func LogRuleList(m LogRuleListModel) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = Base(TopLevelLogRule, "Log rule list").Render(templ.WithChildren(ctx, templ_7745c5c3_Var55), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base(st, TopLevelLogRule, "Log rule list").Render(templ.WithChildren(ctx, templ_7745c5c3_Var55), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

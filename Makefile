@@ -24,7 +24,7 @@ fmt:
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 	go test ./... -race -covermode=atomic -coverprofile=coverage.out
-	go build -ldflags="-X main.BuildTimestamp=$(BUILD_TIMESTAMP)" .
+	go build -ldflags="-X main.ldBuildTimestamp=$(BUILD_TIMESTAMP)" .
 
 .PHONY: clean
 clean:
@@ -43,7 +43,7 @@ serve: run
 .PHONY: run
 run: $(BINARY)
 	killall -9 -q lixie && sleep 1 || true
-	./lixie &
+	./lixie -dev &
 
 %_templ.go: %.templ
 	templ generate -f $<

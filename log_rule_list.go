@@ -85,7 +85,7 @@ func (self *LogRuleListModel) NextLinkString() string {
 	return next.ToLinkString()
 }
 
-func logRuleListHandler(db *data.Database) http.Handler {
+func logRuleListHandler(st State) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		config := LogRuleListConfig{}
 		err := config.Init(r, w)
@@ -93,9 +93,9 @@ func logRuleListHandler(db *data.Database) http.Handler {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		m := LogRuleListModel{Config: config, DB: db, LogRules: db.LogRules.Reversed, Limit: 10}
+		m := LogRuleListModel{Config: config, DB: st.DB, LogRules: st.DB.LogRules.Reversed, Limit: 10}
 		m.Filter()
-		err = LogRuleList(m).Render(r.Context(), w)
+		err = LogRuleList(st, m).Render(r.Context(), w)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 		}

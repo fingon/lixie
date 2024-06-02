@@ -5,8 +5,8 @@ import "github.com/fingon/lixie/data"
 import "fmt"
 import "strconv"
 
-templ LogRuleEdit(rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
-	@Base(TopLevelLogRule, ruleTitle(rule)) {
+templ LogRuleEdit(st State, rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
+	@Base(st, TopLevelLogRule, ruleTitle(rule)) {
 		<form action={ logRuleEdit.URL() }>
 			<input type="hidden" name={ idKey } value={ ruleIDString(rule) }/>
 			<input type="hidden" name={ versionKey } value={ strconv.Itoa(rule.Version) }/>
@@ -220,8 +220,8 @@ templ LogRuleListTable(m LogRuleListModel) {
 	</table>
 }
 
-templ LogRuleList(m LogRuleListModel) {
-	@Base(TopLevelLogRule, "Log rule list") {
+templ LogRuleList(st State, m LogRuleListModel) {
+	@Base(st, TopLevelLogRule, "Log rule list") {
 		@Row("rule-add") {
 			@Col(3) {
 				@AddButton("Add a new rule", logRuleEdit.URL())

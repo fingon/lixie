@@ -122,8 +122,9 @@ func findMatchingOtherRules(db *data.Database, logs []*data.Log, skipRule *data.
 	return nil
 }
 
-func logRuleEditHandler(db *data.Database) http.Handler {
+func logRuleEditHandler(st State) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		db := st.DB
 		rule, err := NewLogRuleFromForm(r)
 		if err != nil {
 			// TODO log error?
@@ -164,14 +165,14 @@ func logRuleEditHandler(db *data.Database) http.Handler {
 		}
 		logs := findMatchingLogs(db, rule)
 		rules := findMatchingOtherRules(db, logs.Logs, rule)
-		err = LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+		err = LogRuleEdit(st, *rule, rules, logs).Render(r.Context(), w)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 		}
 	})
 }
 
-func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
+func logRuleDeleteSpecificHandler(st State) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ridString := r.PathValue("id")
 		rid, err := strconv.Atoi(ridString)
@@ -179,7 +180,7 @@ func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 			// TODO handle error
 			return
 		}
-		if err = db.Delete(rid); err != nil {
+		if err = st.DB.Delete(rid); err != nil {
 			http.NotFound(w, r)
 			return
 		}
@@ -187,7 +188,8 @@ func logRuleDeleteSpecificHandler(db *data.Database) http.Handler {
 	})
 }
 
-func logRuleEditSpecificHandler(db *data.Database) http.Handler {
+func logRuleEditSpecificHandler(st State) http.Handler {
+	db := st.DB
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ridString := r.PathValue("id")
 		rid, err := strconv.Atoi(ridString)
@@ -199,7 +201,7 @@ func logRuleEditSpecificHandler(db *data.Database) http.Handler {
 			if rule.ID == rid {
 				logs := findMatchingLogs(db, rule)
 				rules := findMatchingOtherRules(db, logs.Logs, rule)
-				err = LogRuleEdit(*rule, rules, logs).Render(r.Context(), w)
+				err = LogRuleEdit(st, *rule, rules, logs).Render(r.Context(), w)
 				if err != nil {
 					http.Error(w, err.Error(), 500)
 				}
