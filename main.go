@@ -60,6 +60,7 @@ func newMux(db *data.Database) http.Handler {
 	mux.Handle(topLevelLogRule.Path+"/edit", logRuleEditHandler(db))
 	mux.Handle(topLevelLogRule.Path+"/{id}/delete", logRuleDeleteSpecificHandler(db))
 	mux.Handle(topLevelLogRule.Path+"/{id}/edit", logRuleEditSpecificHandler(db))
+	mux.Handle("/version", versionHandler())
 
 	// Static content
 	staticFS, err := fs.Sub(embedContent, "static")

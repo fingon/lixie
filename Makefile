@@ -8,6 +8,7 @@ BINARY=lixie
 TEMPLATES = $(wildcard *.templ)
 GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
 TEMPL_VERSION = $(shell grep a-h/templ go.mod | sed 's/^.* v/v/')
+BUILD_TIMESTAMP=$(shell date "+%Y-%m-%dT%H:%M:%S")
 
 all: build lint
 
@@ -18,11 +19,12 @@ lint:
 	golangci-lint run --fix  # Externally installed, e.g. brew
 
 fmt:
+	go fmt ./...
 	templ fmt .
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
 	go test ./... -race -covermode=atomic -coverprofile=coverage.out
-	go build .
+	go build -ldflags="-X main.BuildTimestamp=$(BUILD_TIMESTAMP)" .
 
 .PHONY: clean
 clean:
