@@ -3,7 +3,7 @@ name: Go
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, master]
 
 # This concurrency rule is not really relevant here but is nice for
 # cut-n-pasting to elsewhere
