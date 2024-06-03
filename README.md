@@ -43,9 +43,7 @@ local Lixie instance which probably does not exist.
 
 ## Features
 
-- add graph(s) to homepage
-  - log lines over time?
-  - pie chart about spam vs ham?
+- add sorting of log source summary, scrolling
 
 - add error messages if log retrieval fails
 
@@ -69,10 +67,6 @@ local Lixie instance which probably does not exist.
     - As an option, could also parallelize it?
 
 - Rethink how rules are stored; just big json file can get bit unwieldy?
-
-- summary log rules page
-
-  - show by e.g. source, and some nice statistics about hits?
 
 ## Robustness
 
