@@ -10,7 +10,7 @@ GENERATED = $(patsubst %.templ,%_templ.go,$(TEMPLATES))
 TEMPL_VERSION = $(shell grep a-h/templ go.mod | sed 's/^.* v/v/')
 BUILD_TIMESTAMP=$(shell date "+%Y-%m-%dT%H:%M:%S")
 
-all: build lint
+all: fmt build lint
 
 build: $(BINARY)
 

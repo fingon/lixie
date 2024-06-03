@@ -41,15 +41,13 @@ type LogRules struct {
 }
 
 type Database struct {
+	// Config is assumed to be immutable; rules and logs are not
+	sync.Mutex
+
 	config DatabaseConfig
 
-	// TODO: There should be really locking here too?
-	// log fetching is probably the more common thing though
 	LogRules *LogRules
-
-	// Log caching
-	logLock sync.Mutex
-	logs    []*Log
+	logs     []*Log
 
 	// next id to be added state for rules
 	nextID int
@@ -70,15 +68,46 @@ func NewLogRules(rules []*LogRule, version int) *LogRules {
 	return &LogRules{Rules: rules, Reversed: reversed, Version: version}
 }
 
-func (self *Database) Add(r LogRule) error {
+func (self *Database) add(r LogRule) error {
 	r.ID = self.nextLogRuleID()
-	return self.Save(append(slices.Clone(self.LogRules.Rules), &r))
+	return self.save(append(slices.Clone(self.LogRules.Rules), &r))
+}
+
+func (self *Database) Add(r LogRule) error {
+	self.Lock()
+	defer self.Unlock()
+
+	return self.add(r)
+}
+
+func (self *Database) AddOrUpdate(rule LogRule) error {
+	self.Lock()
+	defer self.Unlock()
+
+	for i, v := range self.LogRules.Rules {
+		if v.ID != rule.ID {
+			continue
+		}
+		// TODO do we want to error if version differs?
+		if v.Version == rule.Version {
+			rule.Version++
+			nrules := slices.Clone(self.LogRules.Rules)
+			nrules[i] = &rule
+			return self.save(nrules)
+		}
+		return nil
+	}
+	// Not found
+	return self.add(rule)
 }
 
 func (self *Database) Delete(rid int) error {
+	self.Lock()
+	defer self.Unlock()
+
 	for i, v := range self.LogRules.Rules {
 		if v.ID == rid {
-			return self.Save(slices.Delete(slices.Clone(self.LogRules.Rules), i, i+1))
+			return self.save(slices.Delete(slices.Clone(self.LogRules.Rules), i, i+1))
 		}
 	}
 	return ErrRuleNotFound
@@ -160,7 +189,7 @@ func (self *Database) retrieveLogs(start int64) ([]*Log, error) {
 	return logs, nil
 }
 
-func (self *Database) updateLogsWithLock() {
+func (self *Database) updateLogs() {
 	start := int64(0)
 	if len(self.logs) > 0 {
 		// TODO would be better to get same timestamp + eliminate if it is same entry
@@ -181,9 +210,10 @@ func (self *Database) updateLogsWithLock() {
 }
 
 func (self *Database) Logs() []*Log {
-	self.logLock.Lock()
-	defer self.logLock.Unlock()
-	self.updateLogsWithLock()
+	self.Lock()
+	defer self.Unlock()
+
+	self.updateLogs()
 	return self.logs
 }
 
@@ -197,6 +227,9 @@ func (self *Database) getLogByHash(hash uint64) *Log {
 }
 
 func (self *Database) ClassifyHash(hash uint64, ham bool) error {
+	self.Lock()
+	defer self.Unlock()
+
 	l := self.getLogByHash(hash)
 	if l == nil {
 		return ErrHashNotFound
@@ -220,9 +253,9 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 	return self.Add(rule)
 }
 
-func (self *Database) Save(rules []*LogRule) error {
+func (self *Database) save(rules []*LogRule) error {
 	lrules := NewLogRules(rules, self.LogRules.Version+1)
-
+	self.LogRules = lrules
 	b, err := json.Marshal(self)
 	if err != nil {
 		return err
@@ -248,7 +281,6 @@ func (self *Database) Save(rules []*LogRule) error {
 		return err
 	}
 	defer f.Close()
-	self.LogRules = lrules
 	return nil
 }
 
@@ -268,12 +300,12 @@ func (self *Database) addLogsToCounts(logs []*Log) {
 }
 
 func (self *Database) RuleCount(rid int) int {
-	self.logLock.Lock()
-	defer self.logLock.Unlock()
+	self.Lock()
+	defer self.Unlock()
 
 	// Trigger logs refresh only if we have nothing in cache
 	if self.logs == nil {
-		self.updateLogsWithLock()
+		self.updateLogs()
 	}
 
 	lrules := self.LogRules

@@ -131,31 +131,7 @@ func logRuleEditHandler(st State) http.Handler {
 			return
 		}
 		if r.FormValue(actionSave) != "" {
-			nrules := slices.Clone(db.LogRules.Rules)
-			// Look for existing rule first
-			for i, v := range nrules {
-				if v.ID != rule.ID {
-					continue
-				}
-				// TODO do we want to error if version differs?
-				if v.Version == rule.Version {
-					rule.Version++
-					nrules[i] = rule
-					err = db.Save(nrules)
-					if err != nil {
-						http.Error(w, err.Error(), 500)
-						return
-					}
-				} else {
-					fmt.Printf("Version mismatch - %d <> %d\n", v.Version, rule.Version)
-				}
-				http.Redirect(w, r, topLevelLogRule.Path, http.StatusSeeOther)
-				return
-			}
-
-			// Not found. Add new one.
-			fmt.Printf("Adding new rule\n")
-			err = db.Add(*rule)
+			err := db.AddOrUpdate(*rule)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return

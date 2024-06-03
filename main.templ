@@ -7,36 +7,51 @@ import "strconv"
 templ MainPage(st State) {
 	@Base(st, TopLevelMain, "Lixie") {
 		@Row("") {
+			@Col(8) {
+				@RuleSummary(st)
+			}
 			@Col(2) {
 				Start time:
-			}
-			@Col(4) {
-				{ boot.Format(time.DateTime) }
-			}
-		}
-		@Row("") {
-			@Col(2) {
+				<br/>
 				Uptime:
-			}
-			@Col(4) {
-				{ time.Now().Sub(boot).String() }
-			}
-		}
-		@Row("") {
-			@Col(2) {
+				<br/>
 				Log rules:
-			}
-			@Col(4) {
-				{ strconv.Itoa(len(st.DB.LogRules.Rules)) }
-			}
-		}
-		@Row("") {
-			@Col(2) {
+				<br/>
 				Log lines:
+				<br/>
 			}
-			@Col(4) {
+			@Col(2) {
+				{ boot.Format(time.DateTime) }
+				<br/>
+				{ time.Now().Sub(boot).String() }
+				<br/>
+				{ strconv.Itoa(len(st.DB.LogRules.Rules)) }
+				<br/>
 				{ strconv.Itoa(len(st.DB.Logs())) }
+				<br/>
 			}
 		}
 	}
+}
+
+templ RuleSummary(st State) {
+	<!-- TODO: Should this be here or in separate sub-tab? -->
+	<table class="table table-hover">
+		<thead>
+			<th scope="col">Source</th>
+			<th scope="col">Rules</th>
+			<th scope="col">Hits</th>
+			<th scope="col">Hits per rule</th>
+		</thead>
+		<tbody>
+			for _, rstat := range st.RuleStats(20) {
+				<tr>
+					<td><a href={ rstat.SearchLink() }>{ rstat.Source }</a></td>
+					<td>{ strconv.Itoa(rstat.RuleCount) }</td>
+					<td>{ strconv.Itoa(rstat.Hits) }</td>
+					<td>{ strconv.Itoa(rstat.Hits / rstat.RuleCount) }</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }

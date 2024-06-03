@@ -84,3 +84,12 @@ func (self *LogRule) MatchesFTS(search string) bool {
 	}
 	return false
 }
+
+func (self *LogRule) SourceString() string {
+	for _, m := range self.Matchers {
+		if m.Field == "source" {
+			return m.Op + m.Value
+		}
+	}
+	return ""
+}
