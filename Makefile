@@ -23,7 +23,9 @@ fmt:
 	templ fmt .
 
 $(BINARY): $(wildcard */*.go) $(wildcard *.go) $(GENERATED) Makefile
-	go test ./... -race -covermode=atomic -coverprofile=coverage.out
+	go test ./... \
+		-race \
+		-coverpkg=./... -covermode=atomic -coverprofile=coverage.out
 	go build -ldflags="-X main.ldBuildTimestamp=$(BUILD_TIMESTAMP)" .
 
 .PHONY: clean
