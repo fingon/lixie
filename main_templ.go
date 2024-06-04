@@ -195,7 +195,7 @@ func RuleSummary(st State) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, rstat := range st.RuleStats(20) {
+		for _, rstat := range st.RuleStats() {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr><td><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Sun Jun  2 19:57:04 2024 mstenber
- * Last modified: Mon Jun  3 08:03:36 2024 mstenber
+ * Last modified: Tue Jun  4 13:08:37 2024 mstenber
  * Edit time:     26 min
  *
  */
@@ -47,7 +47,7 @@ func (self *LogSourceSummary) SearchLink() templ.SafeURL {
 		search))
 }
 
-func (self *State) RuleStats(topk int) []*LogSourceSummary {
+func (self *State) RuleStats() []*LogSourceSummary {
 	temp := make(map[string]*LogSourceSummary)
 	for _, rule := range self.DB.LogRules.Rules {
 		ss := rule.SourceString()
@@ -71,8 +71,5 @@ func (self *State) RuleStats(topk int) []*LogSourceSummary {
 		}
 		return true
 	})
-	if len(stats) > topk {
-		return stats[:topk]
-	}
 	return stats
 }

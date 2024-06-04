@@ -44,7 +44,7 @@ templ RuleSummary(st State) {
 			<th scope="col">Hits per rule</th>
 		</thead>
 		<tbody>
-			for _, rstat := range st.RuleStats(20) {
+			for _, rstat := range st.RuleStats() {
 				<tr>
 					<td><a href={ rstat.SearchLink() }>{ rstat.Source }</a></td>
 					<td>{ strconv.Itoa(rstat.RuleCount) }</td>
