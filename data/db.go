@@ -5,6 +5,10 @@
  *
  */
 
+/* Note the default locking strategy is: public functions get the
+lock, private ones assume lock is taken. The exceptions have *Unlocked
+suffix. */
+
 package data
 
 import (
@@ -217,7 +221,10 @@ func (self *Database) Logs() []*Log {
 	return self.logs
 }
 
-func (self *Database) getLogByHash(hash uint64) *Log {
+func (self *Database) getLogByHashUnlocked(hash uint64) *Log {
+	self.Lock()
+	defer self.Unlock()
+
 	for _, log := range self.logs {
 		if log.Hash() == hash {
 			return log
@@ -227,10 +234,7 @@ func (self *Database) getLogByHash(hash uint64) *Log {
 }
 
 func (self *Database) ClassifyHash(hash uint64, ham bool) error {
-	self.Lock()
-	defer self.Unlock()
-
-	l := self.getLogByHash(hash)
+	l := self.getLogByHashUnlocked(hash)
 	if l == nil {
 		return ErrHashNotFound
 	}
