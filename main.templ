@@ -7,28 +7,30 @@ import "strconv"
 templ MainPage(st State) {
 	@Base(st, TopLevelMain, "Lixie") {
 		@Row("") {
-			@Col(8) {
+			@Col(9) {
 				@RuleSummary(st)
 			}
-			@Col(2) {
-				Start time:
-				<br/>
-				Uptime:
-				<br/>
-				Log rules:
-				<br/>
-				Log lines:
-				<br/>
-			}
-			@Col(2) {
-				{ boot.Format(time.DateTime) }
-				<br/>
-				{ time.Now().Sub(boot).String() }
-				<br/>
-				{ strconv.Itoa(len(st.DB.LogRules.Rules)) }
-				<br/>
-				{ strconv.Itoa(len(st.DB.Logs())) }
-				<br/>
+			@Col(3) {
+				<table class="table table-sm table-bordered">
+					<tbody>
+						<tr>
+							<th>Start time</th>
+							<td>{ boot.Format(time.DateTime) }</td>
+						</tr>
+						<tr>
+							<th>Uptime</th>
+							<td>{ time.Now().Sub(boot).String() }</td>
+						</tr>
+						<tr>
+							<th>Log rules</th>
+							<td>{ strconv.Itoa(len(st.DB.LogRules.Rules)) }</td>
+						</tr>
+						<tr>
+							<th>Log lines</th>
+							<td>{ strconv.Itoa(len(st.DB.Logs())) }</td>
+						</tr>
+					</tbody>
+				</table>
 			}
 		}
 	}
@@ -36,7 +38,7 @@ templ MainPage(st State) {
 
 templ RuleSummary(st State) {
 	<!-- TODO: Should this be here or in separate sub-tab? -->
-	<table class="table table-hover">
+	<table class="table table-striped table-hover">
 		<thead>
 			<th scope="col">Source</th>
 			<th scope="col">Rules</th>
