@@ -40,7 +40,7 @@ INDENT = ""
 
 def load_rules(path):
     with open(path) as f:
-        return list(reversed(json.load(f)["LogRules"]))
+        return list(reversed(json.load(f)["LogRules"]["Rules"]))
 
 
 def get_source_matcher(rule):
