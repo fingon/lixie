@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Jun  7 16:43:58 2024 mstenber
- * Last modified: Fri Jun  7 17:26:30 2024 mstenber
- * Edit time:     24 min
+ * Last modified: Fri Jun  7 17:36:17 2024 mstenber
+ * Edit time:     27 min
  *
  */
 
@@ -70,8 +70,8 @@ var rsHitsPerRule = &rsSortHeader{Title: "Hits per rule",
 var rsSortRules = []*rsSortHeader{rsSource, rsRules, rsHits, rsHitsPerRule}
 
 func rsSortedRules(sli []*LogSourceSummary, order int) []*LogSourceSummary {
-	sh := rsRules
-	asc := false
+	var sh *rsSortHeader
+	var asc bool
 
 	for _, rule := range rsSortRules {
 		rid := rule.ID()
@@ -87,8 +87,10 @@ func rsSortedRules(sli []*LogSourceSummary, order int) []*LogSourceSummary {
 		}
 	}
 
-	sort.Slice(sli, func(i, j int) bool {
-		return sh.CompareLess(sli[i], sli[j]) == asc
-	})
+	if sh != nil {
+		sort.Slice(sli, func(i, j int) bool {
+			return sh.CompareLess(sli[i], sli[j]) == asc
+		})
+	}
 	return sli
 }

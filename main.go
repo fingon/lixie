@@ -49,7 +49,7 @@ type mainConfig struct {
 
 func mainHandler(st State) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		config := mainConfig{}
+		config := mainConfig{RSSort: rsHits.ID()}
 		err := cm.Run(r, w, &config)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
