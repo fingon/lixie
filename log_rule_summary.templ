@@ -1,0 +1,40 @@
+// -*- html -*-
+package main
+
+import "strconv"
+
+templ rsSortedHeader(st State, h *rsSortHeader, c mainConfig) {
+	<th scope="col">
+		<a href={ h.ActionLink("/", c.RSSort) }>
+			{ h.Title }
+			if h.ID() == c.RSSort {
+				<i class="bi bi-arrow-down"></i>
+			}
+			if h.ID() == -c.RSSort {
+				<i class="bi bi-arrow-up"></i>
+			}
+		</a>
+	</th>
+}
+
+templ RuleSummary(st State, c mainConfig) {
+	<!-- TODO: Should this be here or in separate sub-tab? -->
+	<table class="table table-striped table-hover">
+		<thead>
+			@rsSortedHeader(st, rsSource, c)
+			@rsSortedHeader(st, rsRules, c)
+			@rsSortedHeader(st, rsHits, c)
+			@rsSortedHeader(st, rsHitsPerRule, c)
+		</thead>
+		<tbody>
+			for _, rstat := range rsSortedRules(st.RuleStats(), c.RSSort) {
+				<tr>
+					<td><a href={ rstat.SearchLink() }>{ rstat.Source }</a></td>
+					<td>{ strconv.Itoa(rstat.RuleCount) }</td>
+					<td>{ strconv.Itoa(rstat.Hits) }</td>
+					<td>{ strconv.Itoa(rstat.Hits / rstat.RuleCount) }</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

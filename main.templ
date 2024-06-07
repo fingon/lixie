@@ -4,11 +4,11 @@ package main
 import "time"
 import "strconv"
 
-templ MainPage(st State) {
+templ MainPage(st State, c mainConfig) {
 	@Base(st, TopLevelMain, "Lixie") {
 		@Row("") {
 			@Col(9) {
-				@RuleSummary(st)
+				@RuleSummary(st, c)
 			}
 			@Col(3) {
 				<table class="table table-sm table-bordered">
@@ -34,26 +34,4 @@ templ MainPage(st State) {
 			}
 		}
 	}
-}
-
-templ RuleSummary(st State) {
-	<!-- TODO: Should this be here or in separate sub-tab? -->
-	<table class="table table-striped table-hover">
-		<thead>
-			<th scope="col">Source</th>
-			<th scope="col">Rules</th>
-			<th scope="col">Hits</th>
-			<th scope="col">Hits per rule</th>
-		</thead>
-		<tbody>
-			for _, rstat := range st.RuleStats() {
-				<tr>
-					<td><a href={ rstat.SearchLink() }>{ rstat.Source }</a></td>
-					<td>{ strconv.Itoa(rstat.RuleCount) }</td>
-					<td>{ strconv.Itoa(rstat.Hits) }</td>
-					<td>{ strconv.Itoa(rstat.Hits / rstat.RuleCount) }</td>
-				</tr>
-			}
-		</tbody>
-	</table>
 }

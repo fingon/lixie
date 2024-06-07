@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/a-h/templ"
+	"github.com/fingon/lixie/cm"
 	"github.com/fingon/lixie/data"
 )
 
@@ -43,6 +43,26 @@ func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
 	return db
 }
 
+type mainConfig struct {
+	RSSort int `cm:"rss"`
+}
+
+func mainHandler(st State) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		config := mainConfig{}
+		err := cm.Run(r, w, &config)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+
+		err = MainPage(st, config).Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+		}
+	})
+}
+
 func newMux(st State) http.Handler {
 	mux := http.NewServeMux()
 
@@ -52,8 +72,7 @@ func newMux(st State) http.Handler {
 	//	http.Redirect(w, r, "/rule/edit", http.StatusSeeOther)
 	// })
 	mux.HandleFunc("/", http.NotFound)
-	mainHandler := templ.Handler(MainPage(st))
-	mux.Handle("/{$}", mainHandler)
+	mux.Handle("/{$}", mainHandler(st))
 
 	mux.Handle(topLevelLog.PathMatcher(), logListHandler(st))
 	mux.Handle(topLevelLog.Path+"/{hash}/ham", logClassifyHandler(st, true))

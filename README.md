@@ -43,8 +43,6 @@ local Lixie instance which probably does not exist.
 
 ## Features
 
-- add sorting of log source summary, scrolling
-
 - add error messages if log retrieval fails
 
 - add better overlapping rule detection
