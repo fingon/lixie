@@ -44,7 +44,7 @@ serve: run
 
 .PHONY: run
 run: $(BINARY)
-	killall -9 -q lixie && sleep 1 || true
+	killall -9 -q lixie || true
 	./lixie -dev &
 
 %_templ.go: %.templ
@@ -56,6 +56,9 @@ upgrade:
 
 # This is unlikely to work for anyone else than me, but..
 update-sample:
+	killall -9 -q lixie || true
+	./lixie &
+	sleep 3
 	rm -rf ./localhost:8080
 	wget -r -np -k -l 1 http://localhost:8080/
 	rsync -a --delete \
