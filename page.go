@@ -31,8 +31,10 @@ func (self *PageInfo) URL() templ.SafeURL {
 	return templ.URL(self.Path)
 }
 
-var topLevelLog = PageInfo{TopLevelLog, "Logs", "/log"}
-var topLevelLogRule = PageInfo{TopLevelLogRule, "Log rules", "/log/rule"}
+var (
+	topLevelLog     = PageInfo{TopLevelLog, "Logs", "/log"}
+	topLevelLogRule = PageInfo{TopLevelLogRule, "Log rules", "/log/rule"}
+)
 
 var topLevelInfos = []PageInfo{topLevelLog, topLevelLogRule}
 

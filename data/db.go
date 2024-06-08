@@ -60,8 +60,10 @@ type Database struct {
 	path string
 }
 
-var ErrHashNotFound = errors.New("specified hash not found")
-var ErrRuleNotFound = errors.New("specified rule not found")
+var (
+	ErrHashNotFound = errors.New("specified hash not found")
+	ErrRuleNotFound = errors.New("specified rule not found")
+)
 
 func NewLogRules(rules []*LogRule, version int) *LogRules {
 	count := len(rules)
@@ -242,16 +244,19 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 	rule := LogRule{Ham: ham, Matchers: []LogFieldMatcher{{
 		Field: "message",
 		Op:    "=",
-		Value: l.Message}}}
+		Value: l.Message,
+	}}}
 	for _, k := range l.StreamKeys {
 		for _, ignoredStream := range ignoredStreamKeys {
 			if ignoredStream == k {
 				goto next
 			}
 		}
-		rule.Matchers = append(rule.Matchers, LogFieldMatcher{Field: k,
+		rule.Matchers = append(rule.Matchers, LogFieldMatcher{
+			Field: k,
 			Op:    "=",
-			Value: l.Stream[k]})
+			Value: l.Stream[k],
+		})
 	next:
 	}
 	return self.Add(rule)
@@ -266,7 +271,7 @@ func (self *Database) save(rules []*LogRule) error {
 	}
 
 	temp := self.path + ".tmp"
-	f, err := os.OpenFile(temp, os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(temp, os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}

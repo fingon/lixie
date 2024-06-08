@@ -104,7 +104,8 @@ func newMux(st State) http.Handler {
 //	stdout, stderr io.Writer,
 func run(
 	ctx context.Context,
-	args []string) error {
+	args []string,
+) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
@@ -121,8 +122,10 @@ func run(
 		return err
 	}
 
-	config := data.DatabaseConfig{LokiServer: *lokiServer,
-		LokiSelector: *lokiSelector}
+	config := data.DatabaseConfig{
+		LokiServer:   *lokiServer,
+		LokiSelector: *lokiSelector,
+	}
 	db := setupDatabase(config, *dbPath)
 
 	state := State{DB: db, BuildTimestamp: ldBuildTimestamp}

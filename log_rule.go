@@ -23,20 +23,26 @@ import (
 
 const idKey = "rid"
 
-const commentKey = "com"
-const disabledKey = "d"
-const hamKey = "h"
-const versionKey = "ver"
+const (
+	commentKey  = "com"
+	disabledKey = "d"
+	hamKey      = "h"
+	versionKey  = "ver"
+)
 
 // per-matcher fields
-const deleteField = "del"
-const fieldField = "f"
-const opField = "o"
-const valueField = "v"
+const (
+	deleteField = "del"
+	fieldField  = "f"
+	opField     = "o"
+	valueField  = "v"
+)
 
 // actions
-const actionAdd = "a"
-const actionSave = "s"
+const (
+	actionAdd  = "a"
+	actionSave = "s"
+)
 
 func NewLogRuleFromForm(r cm.FormValued) (result *data.LogRule, err error) {
 	rule := data.LogRule{}
@@ -90,7 +96,8 @@ func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 		DisableActions:         true,
 		DisablePagination:      true,
 		EnableAccurateCounting: true,
-		Limit:                  5}
+		Limit:                  5,
+	}
 	m.Filter()
 	return &m
 }

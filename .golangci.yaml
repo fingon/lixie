@@ -4,9 +4,10 @@ linters:
      - bodyclose
      - errchkjson
      - errname
+     - gci
      - goconst
      - gocritic
-     - gofmt
+     - gofumpt
      - goimports
      - misspell
      - nestif

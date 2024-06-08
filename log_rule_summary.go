@@ -45,27 +45,35 @@ func (self *rsSortHeader) ActionLink(base string, st int) templ.SafeURL {
 	return templ.URL(fmt.Sprintf("%s?rss=%d", base, id))
 }
 
-var rsSource = &rsSortHeader{Title: "Source",
+var rsSource = &rsSortHeader{
+	Title: "Source",
 	CompareLess: func(s1, s2 *LogSourceSummary) bool {
 		return s1.Source < s2.Source
-	}}
+	},
+}
 
-var rsRules = &rsSortHeader{Title: "Rules",
+var rsRules = &rsSortHeader{
+	Title: "Rules",
 	CompareLess: func(s1, s2 *LogSourceSummary) bool {
 		return s1.RuleCount < s2.RuleCount
-	}}
+	},
+}
 
-var rsHits = &rsSortHeader{Title: "Hits",
+var rsHits = &rsSortHeader{
+	Title: "Hits",
 	CompareLess: func(s1, s2 *LogSourceSummary) bool {
 		return s1.Hits < s2.Hits
-	}}
+	},
+}
 
-var rsHitsPerRule = &rsSortHeader{Title: "Hits per rule",
+var rsHitsPerRule = &rsSortHeader{
+	Title: "Hits per rule",
 	CompareLess: func(s1, s2 *LogSourceSummary) bool {
 		hpr1 := s1.Hits / s1.RuleCount
 		hpr2 := s2.Hits / s2.RuleCount
 		return hpr1 < hpr2
-	}}
+	},
+}
 
 var rsSortRules = []*rsSortHeader{rsSource, rsRules, rsHits, rsHitsPerRule}
 

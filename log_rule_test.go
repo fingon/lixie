@@ -50,11 +50,14 @@ func TestLogRuleEndecode(t *testing.T) {
 		ID:       42,
 		Disabled: true,
 		Ham:      true,
-		Matchers: []data.LogFieldMatcher{{Field: "key",
+		Matchers: []data.LogFieldMatcher{{
+			Field: "key",
 			Op:    "=",
-			Value: "value"}},
+			Value: "value",
+		}},
 		Comment: "a comment",
-		Version: 7}
+		Version: 7,
+	}
 	w := logRuleToWrapper(&rule)
 
 	rule2, err := NewLogRuleFromForm(w)

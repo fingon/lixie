@@ -30,12 +30,16 @@ type LogListConfig struct {
 }
 
 // These must match ^ cm tags
-const llAutoRefreshKey = "auto-refresh"
-const llFilterKey = "filter"
+const (
+	llAutoRefreshKey = "auto-refresh"
+	llFilterKey      = "filter"
+)
 
 // These are handled only in templates
-const expandKey = "expand"
-const beforeKey = "before"
+const (
+	expandKey = "expand"
+	beforeKey = "before"
+)
 
 func (self *LogListConfig) Init(s cm.CookieSource, wr *cm.URLWrapper, w http.ResponseWriter) error {
 	// Global config

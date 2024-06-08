@@ -20,8 +20,7 @@ import (
 	"gotest.tools/v3/assert"
 )
 
-type empty struct {
-}
+type empty struct{}
 
 type tt struct {
 	B  bool   `json:"b" cm:"bf"`

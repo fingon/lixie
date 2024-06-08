@@ -59,12 +59,14 @@ func (self *Log) ToRule(rules *LogRules) *LogRule {
 }
 
 func NewLog(timestamp int64, stream map[string]string, data string) *Log {
-	result := Log{Timestamp: timestamp,
+	result := Log{
+		Timestamp:  timestamp,
 		Time:       time.UnixMicro(timestamp / 1000),
 		Stream:     stream,
 		StreamKeys: SortedKeys[string](stream),
 		Message:    data,
-		RawMessage: data}
+		RawMessage: data,
+	}
 
 	var fields map[string]interface{}
 	err := json.Unmarshal([]byte(data), &fields)
