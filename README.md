@@ -1,5 +1,7 @@
 # Lixie  #
 
+[![codecov](https://codecov.io/gh/fingon/lixie/graph/badge.svg?token=19T4DQWNFP)](https://codecov.io/gh/fingon/lixie)
+
 Lixie is infrastructure awareness tool. The name does not really matter and
 it also does not mean anything (I am not going to use 'dog ate my homework'
 excuse but instead use the modern excuse - Mistral came up with it).
