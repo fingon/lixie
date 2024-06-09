@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Mon Jun  3 07:40:40 2024 mstenber
- * Last modified: Mon Jun  3 08:01:57 2024 mstenber
- * Edit time:     7 min
+ * Last modified: Sun Jun  9 20:45:11 2024 mstenber
+ * Edit time:     9 min
  *
  */
 
@@ -27,8 +27,8 @@ func TestDatabase(t *testing.T) {
 	err = db.Add(LogRule{})
 	assert.Equal(t, err, nil)
 
-	// Add another rule
-	err = db.Add(LogRule{})
+	// Add another rule (using add-or-update API)
+	err = db.AddOrUpdate(LogRule{})
 	assert.Equal(t, err, nil)
 	assert.Equal(t, len(db.LogRules.Rules), 2)
 
@@ -50,4 +50,9 @@ func TestDatabase(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, len(db.LogRules.Rules), 1)
 	assert.Equal(t, db.LogRules.Rules[0].Ham, false)
+
+	assert.Equal(t, db.Delete(1), ErrRuleNotFound)
+
+	// bit worthless - should really test having proper logs within
+	assert.Equal(t, db.RuleCount(0), 0)
 }
