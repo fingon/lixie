@@ -27,7 +27,7 @@ templ MainPage(st State, c mainConfig) {
 						</tr>
 						<tr>
 							<th>Log lines</th>
-							<td>{ strconv.Itoa(len(st.DB.Logs())) }</td>
+							<td>{ strconv.Itoa(st.DB.LogCount()) }</td>
 						</tr>
 					</tbody>
 				</table>

@@ -1,0 +1,25 @@
+{
+ "LogRules": {
+  "Rules": [
+   {
+    "ID": 4,
+    "Disabled": false,
+    "Ham": false,
+    "Matchers": [
+     {
+      "Field": "message",
+      "Op": "=",
+      "Value": "Finished sysstat-collect.service - system activity accounting tool."
+     },
+     {
+      "Field": "source",
+      "Op": "=",
+      "Value": "systemd"
+     }
+    ],
+    "Comment": "",
+    "Version": 0
+   }
+  ]
+ }
+}

@@ -131,7 +131,7 @@ func (self *LogListModel) LogToRule(log *data.Log) *data.LogRule {
 	if self.LogRules != nil {
 		return data.LogToRule(log, self.LogRules)
 	}
-	return log.ToRule(self.DB.LogRules)
+	return log.ToRule(&self.DB.LogRules)
 }
 
 func (self *LogListModel) LogVerdict(log *data.Log) int {
@@ -139,12 +139,16 @@ func (self *LogListModel) LogVerdict(log *data.Log) int {
 	return data.LogRuleToVerdict(rule)
 }
 
-func (self *LogListModel) Filter() {
+func (self *LogListModel) Filter() error {
 	// Some spare capacity but who really cares
 	logs := make([]*data.Log, 0, self.Limit)
 	active := self.Config.BeforeHash == 0
 	count := 0
-	allLogs := self.DB.Logs()
+	allLogs, err := self.DB.Logs()
+	if err != nil {
+		return err
+	}
+
 	allLogs = filterFTS(allLogs, self.Config.Global.Search, len(allLogs))
 	self.TotalCount = len(allLogs)
 	for _, log := range allLogs {
@@ -169,6 +173,7 @@ func (self *LogListModel) Filter() {
 	}
 	self.Logs = logs
 	self.FilteredCount = count
+	return nil
 }
 
 func logListHandler(st State) http.Handler {
@@ -186,7 +191,11 @@ func logListHandler(st State) http.Handler {
 			return
 		}
 		model := LogListModel{Config: config, DB: st.DB, Limit: 20, Post: r.Method == "POST"}
-		model.Filter()
+		err = model.Filter()
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
 		err = LogList(st, model).Render(r.Context(), w)
 		if err != nil {
 			http.Error(w, err.Error(), 400)

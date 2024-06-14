@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Thu May 16 07:24:25 2024 mstenber
- * Last modified: Thu May 16 08:43:58 2024 mstenber
- * Edit time:     25 min
+ * Last modified: Fri Jun 14 12:12:29 2024 mstenber
+ * Edit time:     32 min
  *
  */
 
@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -62,19 +61,10 @@ func TestMain(t *testing.T) {
 	ctx, cancel := context.WithCancel(ctx)
 	t.Cleanup(cancel)
 
-	f, err := os.CreateTemp("", "lixie-test-db-*.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// TODO: Produce test data?
-	f.Close()
-	defer os.Remove(f.Name())
 	port := 18080
 
-	// TODO: Produce some sort of Loki fake (or other way to
-	// ingest precanned input?)
 	go func() {
-		err := run(ctx, []string{"lixie", "-port", strconv.Itoa(port), "-db", f.Name(), "-loki-server", "http://localhost:3100"})
+		err := run(ctx, []string{"lixie", "-port", strconv.Itoa(port), "-db", "testdata/db.json", "-log-source-file", "testdata/logs.json"})
 		if err != nil {
 			log.Panic(err)
 		}
@@ -83,7 +73,7 @@ func TestMain(t *testing.T) {
 	ctx2, cancel2 := context.WithTimeout(ctx, 1*time.Second)
 	t.Cleanup(cancel2)
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
-	err = waitForURL(ctx2, baseURL)
+	err := waitForURL(ctx2, baseURL)
 	if err != nil {
 		log.Panic(err)
 	}

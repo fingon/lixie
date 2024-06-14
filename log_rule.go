@@ -98,7 +98,7 @@ func findMatchingLogs(db *data.Database, rule *data.LogRule) *LogListModel {
 		EnableAccurateCounting: true,
 		Limit:                  5,
 	}
-	m.Filter()
+	_ = m.Filter()
 	return &m
 }
 
@@ -107,9 +107,6 @@ func findMatchingOtherRules(db *data.Database, logs []*data.Log, skipRule *data.
 	// matching is tricky). So we just show rules that out of the
 	// box seem to overlap as they match the same rules.
 	lrules := db.LogRules
-	if lrules == nil {
-		return nil
-	}
 	rules := iter.Map(lrules.Rules, func(rulep **data.LogRule) *data.LogRule {
 		rule := *rulep
 		if rule == skipRule {

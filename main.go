@@ -35,14 +35,6 @@ var boot = time.Now()
 // //go:embed all:static
 var embedContent embed.FS
 
-func setupDatabase(config data.DatabaseConfig, path string) *data.Database {
-	db, err := data.NewDatabaseFromFile(config, path)
-	if err != nil {
-		fmt.Printf("Unable to read %s: %s", path, err.Error())
-	}
-	return db
-}
-
 type mainConfig struct {
 	RSSort int `cm:"rss"`
 }
@@ -114,6 +106,7 @@ func run(
 	address := flags.String("address", "127.0.0.1", "Address to listen at")
 	lokiServer := flags.String("loki-server", "https://fw.fingon.iki.fi:3100", "Address of the Loki server")
 	lokiSelector := flags.String("loki-selector", "{host=~\".+\"}", "Selector to use when querying logs from Loki")
+	arrayFile := flags.String("log-source-file", "", "Log file source")
 	dbPath := flags.String("db", "db.json", "Database to use")
 	dev := flags.Bool("dev", false, "Enable development mode")
 
@@ -122,13 +115,24 @@ func run(
 		return err
 	}
 
-	config := data.DatabaseConfig{
-		LokiServer:   *lokiServer,
-		LokiSelector: *lokiSelector,
+	var source data.LogSource
+	if *arrayFile != "" {
+		arr := data.ArraySource{}
+		err := data.UnmarshalJSONFromPath(&arr, *arrayFile)
+		if err != nil {
+			return err
+		}
+		source = &arr
+	} else {
+		source = &data.LokiSource{Server: *lokiServer, Selector: *lokiSelector}
 	}
-	db := setupDatabase(config, *dbPath)
+	db := data.Database{Source: source, Path: *dbPath}
+	err := db.Load()
+	if err != nil {
+		return err
+	}
 
-	state := State{DB: db, BuildTimestamp: ldBuildTimestamp}
+	state := State{DB: &db, BuildTimestamp: ldBuildTimestamp}
 	if *dev {
 		state.RefreshIntervalMs = 1000
 	}
