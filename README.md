@@ -1,6 +1,8 @@
 # Lixie  #
 
 [![codecov](https://codecov.io/gh/fingon/lixie/graph/badge.svg?token=19T4DQWNFP)](https://codecov.io/gh/fingon/lixie)
+[![Go Report Card](https://goreportcard.com/badge/fingon/lixie)](https://goreportcard.com/report/fingon/lixie)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Lixie is infrastructure awareness tool. The name does not really matter and
 it also does not mean anything (I am not going to use 'dog ate my homework'
