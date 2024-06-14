@@ -9,7 +9,7 @@ it also does not mean anything (I am not going to use 'dog ate my homework'
 excuse but instead use the modern excuse - Mistral came up with it).
 
 The goal of Lixie is to be single binary, zero external dependency
-tool. Currently there are two planned modes:
+tool. Currently there are two implemented modes:
 
 - configuration generator for tools ( mainly [vector](https://vector.dev) )
 
@@ -19,9 +19,10 @@ tool. Currently there are two planned modes:
 # Log filtering - high level idea
 
 Most of the modern logs are, to put it bluntly, spam. Typical SIEM
-approaches rely on matching specific log rules of interest, and ignoring
-the rest. However, this leaves the 'unknown unknown' problem on the table,
-as if you don't have rule for it, you are not aware of it happening either.
+approaches rely on matching specific log rules of interest, and
+ignoring the rest. However, this leaves the 'unknown unknown' problem
+on the table, as if you do not have a rule for it, you are not aware
+of it happening either (and how often it happens).
 
 Lixie's approach is inverse - everything is worth looking at, at least
 once. Lixie provides a way of cultivating ruleset about which lines are
@@ -84,3 +85,7 @@ local Lixie instance which probably does not exist.
 
 - style the pages properly (right now just basic Bootstrap and one or two
   ugly bits remain)
+
+## Perhaps some day?
+
+- support victoria logs / opensearch /  quickwit as log source
