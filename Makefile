@@ -64,3 +64,6 @@ update-sample:
 	rsync -a --delete \
 		./localhost:8080/ ~/sites/fingon.kapsi.fi/www/lixie/
 	cd ~/sites && ./update.sh
+
+validate-codecov:
+	curl --data-binary @codecov.yml https://codecov.io/validate
