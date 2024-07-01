@@ -1,8 +1,10 @@
 // -*- html -*-
 package main
 
-import "github.com/fingon/lixie/data"
-import "strconv"
+import (
+	"github.com/fingon/lixie/data"
+	"strconv"
+)
 
 templ LogListRuleLink(rule *data.LogRule) {
 	if rule != nil {

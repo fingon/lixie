@@ -1,9 +1,11 @@
 // -*- html -*-
 package main
 
-import "github.com/fingon/lixie/data"
-import "fmt"
-import "strconv"
+import (
+	"fmt"
+	"github.com/fingon/lixie/data"
+	"strconv"
+)
 
 templ LogRuleEdit(st State, rule data.LogRule, rules *LogRuleListModel, logs *LogListModel) {
 	@Base(st, TopLevelLogRule, ruleTitle(rule)) {
