@@ -3,7 +3,7 @@ module github.com/fingon/lixie
 go 1.22.0
 
 require (
-	github.com/a-h/templ v0.2.747
+	github.com/a-h/templ v0.2.771
 	github.com/cespare/xxhash v1.1.0
 	github.com/sourcegraph/conc v0.3.0
 	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc
