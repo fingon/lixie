@@ -67,3 +67,10 @@ update-sample:
 
 validate-codecov:
 	curl --data-binary @codecov.yml https://codecov.io/validate
+
+.venv: Makefile .venv/bin/activate
+
+.venv/bin/activate: $(wildcard requirements*.txt)
+	rm -rf .venv
+	uv venv
+	uv pip install -r requirements.txt
