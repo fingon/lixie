@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 14:09:03 2024 mstenber
- * Last modified: Fri Apr 26 21:12:46 2024 mstenber
- * Edit time:     6 min
+ * Last modified: Thu Oct 31 08:02:55 2024 mstenber
+ * Edit time:     7 min
  *
  */
 
@@ -15,6 +15,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"reflect"
 )
@@ -32,10 +33,10 @@ func Parse(r CookieSource, u *URLWrapper, state any) (changed bool, err error) {
 	cookie, err := r.Cookie(name)
 	switch {
 	case err == http.ErrNoCookie:
-		// fmt.Printf("Cookie not found\n")
+		slog.Debug("Cookie not found")
 		err = nil
 	case err != nil:
-		// fmt.Printf("Failed to get cookie: %s", err)
+		slog.Warn("Failed to get cookie", "err", err)
 		return
 	case cookie != nil:
 		err = cookie.Valid()

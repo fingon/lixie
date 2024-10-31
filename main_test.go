@@ -4,8 +4,8 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Thu May 16 07:24:25 2024 mstenber
- * Last modified: Fri Jun 14 12:12:29 2024 mstenber
- * Edit time:     32 min
+ * Last modified: Thu Oct 31 08:01:52 2024 mstenber
+ * Edit time:     33 min
  *
  */
 
@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"testing"
@@ -40,7 +41,7 @@ func waitForURL(ctx context.Context, url string) error {
 			if errors.Is(err, context.DeadlineExceeded) {
 				return err
 			}
-			fmt.Printf("Error making request: %v\n", err)
+			slog.Error("Error making request", "err", err)
 			continue
 		}
 		resp.Body.Close()

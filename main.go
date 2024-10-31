@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -145,9 +146,9 @@ func run(
 		Handler: mux,
 	}
 	go func() {
-		log.Printf("listening on %s\n", httpServer.Addr)
+		slog.Info("Listening", "addr", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Fprintf(os.Stderr, "error listening: %v", err)
+			slog.Error("Error listening", "err", err)
 		}
 	}()
 

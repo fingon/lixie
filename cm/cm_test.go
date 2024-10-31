@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Markus Stenberg
  *
  * Created:       Fri Apr 26 10:44:18 2024 mstenber
- * Last modified: Fri Apr 26 21:16:03 2024 mstenber
+ * Last modified: Thu Oct 31 08:02:09 2024 mstenber
  * Edit time:     42 min
  *
  */
@@ -112,7 +112,7 @@ func TestParse(t *testing.T) {
 	// Pretend we're new request: take in the cookie
 	sc4 := staticCookie{name: "cm-cm.tt", cookie: cookie, err: nil}
 	ts4 := tt{}
-	fmt.Printf("!!!\n")
+
 	changed, err = Parse(&sc4, &sc4.URLWrapper, &ts4)
 	assert.Equal(t, changed, false)
 	assert.Equal(t, err, nil)
