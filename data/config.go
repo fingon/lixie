@@ -12,4 +12,4 @@ package data
 // When adding rules, these stream keys are NOT included
 //
 // (This doesn't prevent their manual addition)
-var ignoredStreamKeys = []string{"host", "lixie"}
+var ignoredStreamKeys = map[string]bool{"host": true, "lixie": true}

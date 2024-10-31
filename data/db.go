@@ -184,17 +184,14 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 		Value: l.Message,
 	}}}
 	for _, k := range l.StreamKeys {
-		for _, ignoredStream := range ignoredStreamKeys {
-			if ignoredStream == k {
-				goto next
-			}
+		if ignoredStreamKeys[k] {
+			continue
 		}
 		rule.Matchers = append(rule.Matchers, LogFieldMatcher{
 			Field: k,
 			Op:    "=",
 			Value: l.Stream[k],
 		})
-	next:
 	}
 	return self.Add(rule)
 }
