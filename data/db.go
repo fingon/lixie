@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"os"
 	"slices"
 	"sync"
@@ -192,6 +193,21 @@ func (self *Database) ClassifyHash(hash uint64, ham bool) error {
 			Op:    "=",
 			Value: l.Stream[k],
 		})
+	}
+	for _, k := range additionalFieldKeys {
+		value, ok := l.Fields[k]
+		if ok {
+			switch value := value.(type) {
+			case string:
+				rule.Matchers = append(rule.Matchers, LogFieldMatcher{
+					Field: k,
+					Op:    "=",
+					Value: value,
+				})
+			default:
+				slog.Info("Unknown field type in ClassifyHash", "field", k, "value", value)
+			}
+		}
 	}
 	return self.Add(rule)
 }
