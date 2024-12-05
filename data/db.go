@@ -34,6 +34,8 @@ type LogRules struct {
 	// Reversed rules - these are always available if Rules are
 	Reversed []*LogRule `json:"-"`
 
+	brm *BulkRuleMatcher
+
 	// Internal tracking of rule matches to log lines
 	rid2Count map[int]int
 }
@@ -67,7 +69,7 @@ func NewLogRules(rules []*LogRule, version int) LogRules {
 	for k, v := range rules {
 		reversed[count-k-1] = v
 	}
-	return LogRules{Rules: rules, Reversed: reversed, Version: version}
+	return LogRules{Rules: rules, Reversed: reversed, brm: NewBulkRuleMatcher(reversed), Version: version}
 }
 
 func (self *Database) add(r LogRule) error {

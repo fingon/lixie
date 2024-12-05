@@ -59,16 +59,6 @@ local Lixie instance which probably does not exist.
 
 ## Big features
 
-- Optimize rule evaluation (it could be also used when generating rules for
-  Vector); identify the stuff with most cardinality, match by that first
-  (and order the rules based on that too; it doesn't hurt to make it user
-  visible)
-
-    - idea: # of field matchers / # of regexp field matchers = score (and
-      then do iteratively by fields)
-
-    - As an option, could also parallelize it?
-
 - Rethink how rules are stored; just big json file can get bit unwieldy?
 
 ## Robustness

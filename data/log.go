@@ -52,7 +52,7 @@ func (self *Log) MatchesFTS(search string) bool {
 
 func (self *Log) ToRule(rules *LogRules) *LogRule {
 	if self.rulesVersion != rules.Version {
-		self.rule = LogToRule(self, rules.Reversed)
+		self.rule = rules.brm.ToRule(self)
 		self.rulesVersion = rules.Version
 	}
 	return self.rule
