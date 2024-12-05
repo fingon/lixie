@@ -67,8 +67,6 @@ local Lixie instance which probably does not exist.
 
 - Properly vendor static resources (bootstrap CSS, htmx JS)
 
-- identify better logging pattern than printf :p
-
 ## Prettiness
 
 - favicon

@@ -11,7 +11,6 @@ import (
 	"context"
 	"embed"
 	"flag"
-	"fmt"
 	"io/fs"
 	"log"
 	"log/slog"
@@ -160,7 +159,7 @@ func run(
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
-			fmt.Fprintf(os.Stderr, "error shutting down http server: %s\n", err)
+			slog.Error("error shutting down http server", "err", err)
 		}
 	}()
 	wg.Wait()
@@ -171,7 +170,7 @@ func main() {
 	ctx := context.Background()
 	err := run(ctx, os.Args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		slog.Error("run resulted in error", "err", err)
 		os.Exit(1)
 	}
 }
