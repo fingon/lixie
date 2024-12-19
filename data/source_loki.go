@@ -10,6 +10,7 @@ package data
 import (
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -17,6 +18,8 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type LokiQueryResultDataResult struct {
@@ -39,7 +42,8 @@ type LokiSource struct {
 	Server   string
 	Selector string
 
-	last *Log
+	lastErrorTime time.Time
+	last          *Log
 }
 
 func (self *LokiSource) loadAfter(start int64) ([]*Log, error) {
@@ -47,11 +51,13 @@ func (self *LokiSource) loadAfter(start int64) ([]*Log, error) {
 
 	base := self.Server + "/loki/api/v1/query_range"
 	v := url.Values{}
-	v.Set("query", self.Selector)
 	// v.Set("direction", "backward")
 	v.Set("limit", "5000")
 	if start > 0 {
+		v.Set("query", self.Selector)
 		v.Set("start", strconv.FormatInt(start, 10))
+	} else {
+		v.Set("query", strings.TrimSuffix(self.Selector, "}")+`,lixie!="spam"}`)
 	}
 
 	resp, err := http.Get(base + "?" + v.Encode())
@@ -105,14 +111,22 @@ func (self *LokiSource) loadAfter(start int64) ([]*Log, error) {
 }
 
 func (self *LokiSource) Load() ([]*Log, error) {
-	start := int64(0)
+	var start int64
 	if self.last != nil {
 		// TODO would be better to get same timestamp + eliminate if it is same entry
 		start = self.last.Timestamp + 1
 	}
+
+	now := time.Now()
+
+	if now.Sub(self.lastErrorTime).Seconds() < 5 {
+		return nil, errors.New("Too short time since last failure")
+	}
+
 	logs, err := self.loadAfter(start)
 	if err != nil {
 		slog.Error("Loading from Loki failed", "err", err)
+		self.lastErrorTime = now
 		return nil, err
 	}
 	for i, log := range logs {
