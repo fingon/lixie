@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"slices"
@@ -111,6 +112,7 @@ func (self *LokiSource) Load() ([]*Log, error) {
 	}
 	logs, err := self.loadAfter(start)
 	if err != nil {
+		slog.Error("Loading from Loki failed", "err", err)
 		return nil, err
 	}
 	for i, log := range logs {
