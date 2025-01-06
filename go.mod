@@ -1,9 +1,10 @@
 module github.com/fingon/lixie
 
 go 1.22.0
+toolchain go1.23.4
 
 require (
-	github.com/a-h/templ v0.2.793
+	github.com/a-h/templ v0.3.819
 	github.com/cespare/xxhash v1.1.0
 	github.com/sourcegraph/conc v0.3.0
 	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d
