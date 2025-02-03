@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.4
 
 require (
-	github.com/a-h/templ v0.3.819
+	github.com/a-h/templ v0.3.833
 	github.com/cespare/xxhash v1.1.0
 	github.com/sourcegraph/conc v0.3.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
