@@ -9,7 +9,7 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/sourcegraph/conc v0.3.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
-	gotest.tools/v3 v3.5.1
+	gotest.tools/v3 v3.5.2
 )
 
 require (
