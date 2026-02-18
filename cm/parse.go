@@ -69,7 +69,7 @@ func Parse(r CookieSource, u *URLWrapper, state any) (changed bool, err error) {
 		value := u.FormValue(formKey)
 
 		f := s.FieldByName(field.Name)
-		if !(f.IsValid() && f.CanSet()) {
+		if !f.IsValid() || !f.CanSet() {
 			err = fmt.Errorf("invalid field %s", field.Name)
 			return
 		}
